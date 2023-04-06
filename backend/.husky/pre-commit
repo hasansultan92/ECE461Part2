@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+#you can essentially run arbitray commands here and they will execute at commit time. Trying to figure out a way for them to exectue at push time instead
+echo "Husky pre commit is running"
+#npm run lint
+#bash run test ../../../tests/_urls/url_test1.txt
