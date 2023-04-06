@@ -2,8 +2,8 @@ require('dotenv').config();
 import {log, retrieveEnvVariables} from '../controllers/utils/misc';
 const envVars: any = retrieveEnvVariables();
 const {logFilePath, level, mongoLink, port, github} = envVars; // retrive all environment variables
-
 //console.log('here', logFilePath, typeof level, mongoLink, port);
+
 if (!mongoLink) {
   log('URL for mongoDB not found', 'URL for mongoDB not found', level);
   process.exit(1);
@@ -34,5 +34,6 @@ try {
     console.log(`Server is active on Port : ${port}`);
   });
 } catch (error: any) {
+  console.error(error)
   log(error, error.stack, level);
 }

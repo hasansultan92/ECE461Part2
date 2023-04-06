@@ -1,6 +1,6 @@
 
 HOME = ./
-CONTROLLERS = ./controllers/ ./routes/
+CONTROLLERS = ./backend/controllers/ ./backend/routes/
 FILESCOMPILE = $(CONTROLLERS)*
 STARTINGPOINT = main
 EXTS := js js.map

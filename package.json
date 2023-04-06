@@ -4,7 +4,7 @@
   "description": "Something to be added later",
   "author": "Hasan, Kyle, Jason",
   "license": "GNU GENERAL PUBLIC LICENSE V2.1",
-  "main": "./routes/server.ts",
+  "main": "./backend/routes/server.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hasansultan92/ECE461Part2.git"
@@ -22,7 +22,7 @@
     "typescript": "^4.9.4"
   },
   "config": {
-    "path": "./routes/server.ts"
+    "path": "./backend/routes/server.ts"
   },
   "scripts": {
     "lint": "gts lint",
@@ -48,6 +48,7 @@
     "mongoose": "^7.0.3",
     "ts-node": "^10.9.1",
     "util": "^0.12.5",
-    "util.promisify-all": "^1.0.2"
+    "util.promisify-all": "^1.0.2",
+    "winston": "^3.8.2"
   }
 }
