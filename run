@@ -41,7 +41,7 @@ run_cmd() {
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
     nvm install v18.14.0 > /dev/null 2>&1
     nvm use v18.14.0 > /dev/null
-    node build/routes/index.js "$1"
+    node ./routes/index.js "$1"
 }
 case "$1" in
     install)

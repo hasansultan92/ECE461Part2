@@ -59,55 +59,92 @@ export function get_github_url(package_name: string): Promise<string | null> {
   return getPackageGithubUrl(package_name);
 }
 
-export async function _get_urls(
-  filepath: string
-): Promise<Promise<URL_PARSE>[] | undefined> {
-  try {
-    const unparsed_urls = await exports.read_file(filepath);
-    if ('map' in unparsed_urls) {
-      const urls = unparsed_urls.map(async (url: string) => {
-        const url_parse: URL_PARSE = {
-          original_url: url,
-          github_repo_url: '',
-        };
-        if (exports.check_if_npm(url)) {
-          const package_name = exports.get_npm_package_name(url);
-          if (package_name) {
-            const potential_repo = await exports.get_github_url(package_name);
-            if (potential_repo) {
-              if (exports.check_if_github(potential_repo)) {
-                url_parse.github_repo_url = potential_repo;
-              }
-            }
-          }
-        } else if (exports.check_if_github(url)) {
-          url_parse.github_repo_url = url;
-        }
-        return url_parse;
-      });
-      return urls;
-    } else {
-      return undefined; // try-catch means can never be here
-    }
-  } catch (err) {
-    if (err instanceof Error) {
-      globalThis.logger.error(`_get_urls: ${err.message}, stack: ${err.stack}`);
-    }
-  }
-  return undefined;
-}
 
-export async function get_urls(filepath: string): Promise<URL_PARSE[]> {
-  const data: Promise<URL_PARSE>[] | undefined = await exports._get_urls(
-    filepath
-  );
-  if (data) {
-    const final_data: URL_PARSE[] = [];
-    for await (const url_parse of data) {
-      final_data.push(url_parse);
+// export async function _get_urls(
+//   filepath: string
+// ): Promise<Promise<URL_PARSE>[] | undefined> {
+//   try {
+//     const unparsed_urls = await exports.read_file(filepath);
+//     if ('map' in unparsed_urls) {
+//       const urls = unparsed_urls.map(async (url: string) => {
+//         const url_parse: URL_PARSE = {
+//           original_url: url,
+//           github_repo_url: '',
+//         };
+//         if (exports.check_if_npm(url)) {
+//           const package_name = exports.get_npm_package_name(url);
+//           if (package_name) {
+//             const potential_repo = await exports.get_github_url(package_name);
+//             if (potential_repo) {
+//               if (exports.check_if_github(potential_repo)) {
+//                 url_parse.github_repo_url = potential_repo;
+//               }
+//             }
+//           }
+//         } else if (exports.check_if_github(url)) {
+//           url_parse.github_repo_url = url;
+//         }
+//         return url_parse;
+//       });
+//       return urls;
+//     } else {
+//       return undefined; // try-catch means can never be here
+//     }
+//   } catch (err) {
+//     if (err instanceof Error) {
+//       globalThis.logger.error(`_get_urls: ${err.message}, stack: ${err.stack}`);
+//     }
+//   }
+//   return undefined;
+// }
+
+// export async function get_urls(filepath: string): Promise<URL_PARSE[]> {
+//   const data: Promise<URL_PARSE>[] | undefined = await exports._get_urls(
+//     filepath
+//   );
+//   if (data) {
+//     const final_data: URL_PARSE[] = [];
+//     for await (const url_parse of data) {
+//       final_data.push(url_parse);
+//     }
+//     console.log(final_data);
+//     return final_data;
+//   } else {
+//     return [];
+//   }
+// }
+
+
+
+
+export async function get_urls(urlInput: string): Promise<URL_PARSE[]> {
+  if(urlInput){
+    const url_parse: URL_PARSE = {
+      original_url: urlInput,
+      github_repo_url: '',
+    };
+
+
+    if (exports.check_if_npm(urlInput)) {
+      const package_name = exports.get_npm_package_name(urlInput);
+      if (package_name) {
+        const potential_repo = await exports.get_github_url(package_name);
+        if (potential_repo) {
+          if (exports.check_if_github(potential_repo)) {
+            url_parse.github_repo_url = potential_repo;
+          }
+        }
+      }
+    } else if (exports.check_if_github(urlInput)) {
+      url_parse.github_repo_url = urlInput;
     }
+    const final_data: URL_PARSE[] = [];
+    final_data.push(url_parse);
+    console.log(final_data);
     return final_data;
-  } else {
+  }
+  else{
     return [];
   }
 }
+  

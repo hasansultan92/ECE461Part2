@@ -3,7 +3,8 @@ import math
 import sys
 import csv
 def main():
-    repoDir = sys.argv[1];
+    print("haklinu matata")
+    repoDir = sys.argv[1]
     clocOut = countLines(repoDir)
     correctness = calcCorrectness(clocOut)
     rampUp = calcRampUp(clocOut[0], clocOut[1], clocOut[3])
@@ -88,11 +89,15 @@ def countLinesTest(testFile, repoDir):
         #print(cmd)
         os.system(cmd)
     lineCount = 0
-    with open("./numTestLines") as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=",")
-        for row in csv_reader:
-            lineCount+= int(row[4])
-    os.system("rm ./numTestLines")
+    
+    path = "./numTestLines"
+    if os.path.exists(path):
+        with open("./numTestLines") as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=",")
+            for row in csv_reader:
+                if(len(row) >=4):
+                    lineCount+= int(row[4])
+        os.system("rm ./numTestLines")
     os.system("rm ./testList")
     return(lineCount);
 if __name__ == "__main__":

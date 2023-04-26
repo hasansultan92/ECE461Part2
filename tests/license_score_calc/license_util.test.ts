@@ -1,14 +1,14 @@
 import {
   clone_and_install,
   check_licenses_result,
-} from '../../src/license_score_calc/license_util';
+} from '../../controllers/MetricCalculator/license_score_calc/license_util';
 
 //import * as path from 'path';
-import * as sub_process_help from '../../src/sub_process_help';
+import * as sub_process_help from '../../controllers/MetricCalculator/sub_process_help';
 const promisify = require('util.promisify-all');
 const checker_orig = require('license-checker');
 const checker = promisify(checker_orig);
-import {create_logger} from '../../src/logging_setup';
+import {create_logger} from '../../controllers/MetricCalculator/logging_setup';
 
 create_logger();
 
