@@ -12,7 +12,7 @@ import {
   deletePackage,
 } from '../controllers/API/package/packageController';
 import {errorHandler} from '../controllers/utils/responseHandler';
-import {ranker} from '../routes/index';
+import {metricCalculatorProgram} from '../../routes/index';
 
 module.exports = function (express: any) {
   const router = express.Router();
@@ -40,6 +40,8 @@ module.exports = function (express: any) {
 
   // TODO
   router.post('/package', async (req: Request, res: Response, next: any) => {
+
+    //USE metricCalculatorProgram and pass in a url for this!!
 /*     const score: number = await ranker();
     if (score > 0.8) {
       await createPackage(req, res);
