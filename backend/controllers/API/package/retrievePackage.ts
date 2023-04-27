@@ -1,2 +1,4 @@
-export const findByName = async (req: any, res: any) => {};
+export const findByName = async (req: any, res: any) => {
+    
+};
 

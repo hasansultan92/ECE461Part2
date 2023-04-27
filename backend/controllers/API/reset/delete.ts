@@ -3,8 +3,6 @@ import {deleteUsers, isAuthValid} from '../authenticate/AuthenticateFunctions';
 import {deletePackages} from '../package/packageController';
 const packageSchema = require('../../Database/package-model');
 
-
-
 export const resetReg = async (req: any, res: any) => {
   const authToken: string = req.headers['x-authorization'];
   if (!authToken) {
@@ -40,7 +38,7 @@ export const findByIdAndDelete = async (req: any, res: any) => {
     const packageId = req.params.id.split(':');
     const IndexIdDb = packageId[0];
     const VersionNumber = packageId[1];
-
+    console.log(packageId);
     let existingPackage = await packageSchema.findById({_id: IndexIdDb});
     if (existingPackage) {
       const VersionIndex = existingPackage.version.indexOf(VersionNumber);

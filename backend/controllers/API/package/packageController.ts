@@ -214,7 +214,52 @@ export const createPackage = async (req: any, res: any) => {
   }
 };
 
-export const findByRegex = async (req: any, res: any) => {};
+export const findById = async (req: any, res: any) => {
+  let packageId: any = req.params.id;
+  //console.log(req.headers['authorization'])
+  if (!packageId) {
+    errorHandler(400, 'The package id is not valid', req, res);
+    return;
+  }
+  const authToken: string = req.headers['x-authorization'];
+  if (!authToken) {
+    // Send out error about the token not existing
+    errorHandler(400, 'Authorization token was not found', req, res);
+    return;
+  }
+  const valid: boolean = isAuthValid(authToken);
+  if (!valid) {
+    errorHandler(400, 'Authorization token in valid', req, res);
+    return;
+  }
+
+  packageId = packageId.split(':');
+  const IndexIdDb = packageId[0];
+  const VersionNumber = packageId[1];
+  const existingPackage = packageSchema.findById(IndexIdDb);
+  if (existingPackage) {
+    // Package still exists in database
+    const VersionIndex = existingPackage.version.indexOf(VersionNumber);
+
+    res.json({
+      metadata: {
+        Name: existingPackage.name,
+        Version: VersionNumber,
+        ID: packageId,
+      },
+      data: {
+        // To be filled later
+        Content: '<string>',
+        URL: existingPackage.repository[0],
+        JSProgram: '<string>',
+      },
+    });
+    return;
+  } else {
+    errorHandler(400, 'This package does not exist anymore', req, res);
+    return;
+  }
+};
 
 export const deletePackage = async (req: any, res: any) => {
   // Find the package
