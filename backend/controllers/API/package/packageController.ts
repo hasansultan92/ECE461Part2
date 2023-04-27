@@ -1,7 +1,7 @@
 const packageSchema = require('../../Database/package-model');
 const child_process = require('child_process');
 const fs = require('fs');
-
+const mongoose = require('mongoose');
 import {emit, eventNames} from 'process';
 import {SCORE_OUT, metricCalculatorProgram} from '../../../../routes';
 import {log} from '../../utils/misc';
@@ -10,7 +10,11 @@ import {
   errorHandler,
   CustomError,
 } from '../../utils/responseHandler';
-import {isAuthValid} from '../authenticate/AuthenticateFunctions';
+import {
+  TokenInformation,
+  isAuthValid,
+  userData,
+} from '../authenticate/AuthenticateFunctions';
 
 export const deletePackages = async (): Promise<void> => {
   await packageSchema.deleteMany();
@@ -27,13 +31,31 @@ const savePackageToDb = async (
   name: string,
   version: string,
   url: string,
-  score: SCORE_OUT
+  score: SCORE_OUT,
+  TokenInformation: TokenInformation
 ): Promise<void> => {
+  var id = new mongoose.Types.ObjectId();
+  console.log(id);
   const newPackage = await packageSchema.create({
+    _id: id,
     name: name,
     version: Array(version),
     repository: Array(url),
     scores: Array(score),
+    id:Array(id),
+    history: {
+      User: {
+        name: TokenInformation.name,
+        isAdmin: TokenInformation.isAdmin,
+      },
+      Date: Date.now(),
+      PackageMetadata: {
+        Name: name,
+        Version: version,
+        ID: id + ':' + version,
+      },
+      Action: 'CREATE',
+    },
   });
   await newPackage.save();
   return;
@@ -74,11 +96,13 @@ export const createPackage = async (req: any, res: any) => {
         ///  WORK FROM HERE!
         const packageJson = require('../packages/package.json');
         // perform the save here
+        const userInfo: TokenInformation = await userData(authToken);
         savePackageToDb(
           packageJson.name,
           packageJson.version,
           result.URL,
-          result
+          result,
+          userInfo
         );
         successHandler(200, {}, req, res);
         return;
@@ -97,8 +121,13 @@ export const createPackage = async (req: any, res: any) => {
         `cd ./backend/controllers/API/packages/ && unzip new.zip`
       );
       const packageJson = require('../packages/package.json');
-      if (packageJson.repository == undefined || packageJson.url == undefined) {
+      console.log(packageJson.repository);
+      if (
+        !packageJson.repository == undefined ||
+        !packageJson.url == undefined
+      ) {
         errorHandler(400, 'Could not find a link to the package', req, res);
+        return;
       } else {
         const packageURL: any = packageJson.repository.url || packageJson.url;
         let name: any =
@@ -136,17 +165,19 @@ export const createPackage = async (req: any, res: any) => {
           }
         } else {
           const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
+          const userInfo: TokenInformation = await userData(authToken);
+
           savePackageToDb(
             packageJson.name,
             packageJson.version,
             packageURL,
-            result
+            result,
+            userInfo
           );
           successHandler(200, {msg: 'Done'}, req, res);
           return;
         }
       }
-      return;
     }
   } catch (e: any) {
     console.log(e);
@@ -167,7 +198,21 @@ export const createPackage = async (req: any, res: any) => {
 
 export const findByRegex = async (req: any, res: any) => {};
 
-export const findById = async (req: any, res: any) => {};
+export const findByIdAndDelete = async (req: any, res: any) => {
+  const authToken: string = req.headers['x-authorization'];
+  if (!authToken) {
+    errorHandler(400, 'Authorization token was not found', req, res);
+    return;
+  }
+  const tokenValid: boolean = isAuthValid(authToken);
+  if (!tokenValid) {
+    errorHandler(400, 'You are not a valid user', req, res);
+    return;
+  }
+
+  const existingPackage = await packageSchema.findById(req.params.id);
+  console.log(existingPackage);
+};
 
 export const deletePackage = async (req: any, res: any) => {
   // Find the package
