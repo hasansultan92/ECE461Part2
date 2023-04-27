@@ -5,11 +5,12 @@ import {
   authenticate,
   isAuthValid,
   isAdmin,
+  userData,
 } from '../controllers/API/authenticate/AuthenticateFunctions';
 import {log} from '../controllers/utils/misc';
 import {
   createPackage,
-  findById,
+  findByIdAndDelete,
   findByRegex,
   deletePackage,
   deletePackages,
@@ -25,7 +26,8 @@ module.exports = function (express: any) {
   router.post('/testFunction', async (req: Request, res: Response) => {
     console.log('hello');
     const authToken: any = req.headers['x-authorization'];
-    const returnv: Boolean = isAdmin(authToken);
+    console.log(authToken)
+    const returnv: object = userData(authToken);
     res.json({msg: returnv});
   });
 
@@ -49,21 +51,22 @@ module.exports = function (express: any) {
     await createPackage(req, res);
   });
 
-  // What is an id for the package?
-  router.delete(
-    '/package/:id',
-    async (req: Request, res: Response, next: any) => {
-      await findById(req, res);
-    }
-  );
 
-  router.post(
+
+/*   router.post(
     '/package/byRegEx',
     async (req: Request, res: Response, next: any) => {
       await findByRegex(req, res);
     }
-  );
+  ); */
 
+  // What is an id for the package?
+  router.delete(
+    '/package/:id',
+    async (req: Request, res: Response, next: any) => {
+      await findByIdAndDelete(req, res);
+    }
+  );
   router.get('/package/byName/:name', async (req: any, res: any) => {
     await findByName(req, res);
   });

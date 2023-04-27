@@ -2,7 +2,7 @@ const packageSchema = require('../../Database/package-model');
 const child_process = require('child_process');
 const fs = require('fs');
 const mongoose = require('mongoose');
-import {emit, eventNames} from 'process';
+
 import {SCORE_OUT, metricCalculatorProgram} from '../../../../routes';
 import {log} from '../../utils/misc';
 import {
@@ -42,7 +42,7 @@ const savePackageToDb = async (
     version: Array(version),
     repository: Array(url),
     scores: Array(score),
-    id:Array(id),
+    id: Array(id),
     history: {
       User: {
         name: TokenInformation.name,
@@ -140,14 +140,17 @@ export const createPackage = async (req: any, res: any) => {
         console.log(name);
         let existingPackage = await packageSchema.findOne({name});
         if (existingPackage) {
-          //console.log(existingPackage);
           if (existingPackage.version.indexOf(packageJson.version) != -1) {
             // This package already exists. Return as is
             console.log('This package already exists');
             successHandler(200, {}, req, res);
             return;
           } else {
+            // Update the previous entry
             const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
+            const userInfo: TokenInformation = await userData(authToken);
+            console.log(existingPackage);
+            const existingId = existingPackage._id;
             existingPackage = await packageSchema.findOneAndUpdate(
               {name},
               {
@@ -155,15 +158,30 @@ export const createPackage = async (req: any, res: any) => {
                   version: packageJson.version,
                   repository: packageURL,
                   scores: result,
+                  id: existingId + ':' + packageJson.version,
+                  history: {
+                    User: {
+                      name: userInfo.name,
+                      isAdmin: userInfo.isAdmin,
+                    },
+                    Date: Date.now(),
+                    PackageMetadata: {
+                      Name: existingPackage.name,
+                      Version: packageJson.version,
+                      ID: existingId + ':' + packageJson.version,
+                    },
+                    Action: 'UPDATE',
+                  },
                 },
               }
             );
-            console.log(existingPackage);
+
             console.log('Just saved a new package');
             successHandler(200, {}, req, res);
             return;
           }
         } else {
+          // Create a new entry for the package
           const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
           const userInfo: TokenInformation = await userData(authToken);
 
@@ -199,19 +217,70 @@ export const createPackage = async (req: any, res: any) => {
 export const findByRegex = async (req: any, res: any) => {};
 
 export const findByIdAndDelete = async (req: any, res: any) => {
-  const authToken: string = req.headers['x-authorization'];
-  if (!authToken) {
-    errorHandler(400, 'Authorization token was not found', req, res);
-    return;
-  }
-  const tokenValid: boolean = isAuthValid(authToken);
-  if (!tokenValid) {
-    errorHandler(400, 'You are not a valid user', req, res);
-    return;
-  }
+  try {
+    const authToken: string = req.headers['x-authorization'];
+    if (!authToken) {
+      errorHandler(400, 'Authorization token was not found', req, res);
+      return;
+    }
+    const tokenValid: boolean = isAuthValid(authToken);
+    if (!tokenValid) {
+      errorHandler(400, 'You are not a valid user', req, res);
+      return;
+    }
 
-  const existingPackage = await packageSchema.findById(req.params.id);
-  console.log(existingPackage);
+    // Split the receiving ID
+    const packageId = req.params.id.split(':');
+    const IndexIdDb = packageId[0];
+    const VersionNumber = packageId[1];
+
+    let existingPackage = await packageSchema.findById({_id: IndexIdDb});
+    if (existingPackage) {
+      const VersionIndex = existingPackage.version.indexOf(VersionNumber);
+      if (VersionIndex != -1) {
+        // set the specific field to null by capturing its position from client through 'VersionIndex' variable
+        existingPackage.version[VersionIndex] = null;
+        existingPackage.scores[VersionIndex] = null;
+        existingPackage.id[VersionIndex] = null;
+        existingPackage.repository[VersionIndex] = null;
+        existingPackage.history[VersionIndex] = null;
+
+        // update with new data
+        await packageSchema.findByIdAndUpdate(IndexIdDb, existingPackage);
+
+        // remove all null fields in the stated array
+        await packageSchema.updateOne(
+          {_id: IndexIdDb},
+          {
+            $pull: {
+              version: null,
+              scores: null,
+              id: null,
+              repository: null,
+              history: null,
+            },
+          }
+        );
+        successHandler(200, {}, req, res);
+        return;
+      } else {
+        errorHandler(400, 'This package version does not exist', req, res);
+        return;
+      }
+    } else {
+      errorHandler(400, 'This package does not exist', req, res);
+      return;
+    }
+  } catch (e: any) {
+    console.log(e);
+    errorHandler(
+      400,
+      'Something went wrong trying to delete this package',
+      req,
+      res
+    );
+    return;
+  }
 };
 
 export const deletePackage = async (req: any, res: any) => {
