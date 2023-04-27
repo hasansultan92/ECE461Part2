@@ -12,7 +12,7 @@ const fs = require('fs');
 const arrayToNdjson = require('array-to-ndjson');
 const { execSync } = require('node:child_process');
 export interface SCORE_OUT {
-  Threshold: number;
+  Status: number;
   URL: string;
   NetScore: number;
   RampUp: number;
@@ -50,7 +50,7 @@ export async function metricCalculatorProgram(repo_url: string): Promise<SCORE_O
   if(!urls[0].github_repo_url){
     console.log("oh would you look at that it is empty");
     const score: SCORE_OUT = {
-      Threshold: 0,
+      Status: -2,
       URL: "",
       NetScore: 0,
       RampUp: 0,
@@ -74,7 +74,7 @@ export async function metricCalculatorProgram(repo_url: string): Promise<SCORE_O
     const score_list: Promise<SCORE_OUT>[] = urls.map(
       async (url_parse: URL_PARSE) => {
         const score: SCORE_OUT = {
-          Threshold: 0,
+          Status: -1,
           URL: url_parse.original_url, // SHOULD THIS BE ORIGINAL?
           NetScore: 0,
           RampUp: 0,
@@ -82,8 +82,8 @@ export async function metricCalculatorProgram(repo_url: string): Promise<SCORE_O
           BusFactor: 0,
           ResponsiveMaintainer: 0,
           License: 0,
-          VersionPinning: 0,
-          CodeReview: 0
+          VersionPinning: 1,
+          CodeReview: 1
         };
 
         const tmp_dir: string = await create_tmp(); 
@@ -113,11 +113,11 @@ export async function metricCalculatorProgram(repo_url: string): Promise<SCORE_O
         score.RampUp = await ramp_up_sub_score;
         score.Correctness = await correctness_sub_score;
         score.NetScore = net_score_formula(score);
-        if(score.RampUp > 0.5 && score.Correctness > 0.5 && score.BusFactor > 0.5 && score.ResponsiveMaintainer > 0.5 && score.License > 0.5 && score.VersionPinning > 0.5 && score.CodeReview > 0.5){
-          score.Threshold = 1;
+        if(score.RampUp > 0.5 && score.Correctness > 0.1 && score.BusFactor > 0.1 && score.ResponsiveMaintainer > 0.1 && score.License > 0.1 && score.VersionPinning > 0.1 && score.CodeReview > 0.1){
+          score.Status = 1;
         }
         else{
-          score.Threshold = 0;
+          score.Status = 0;
         }      
         
         //delete_dir(tmp_dir);
@@ -143,4 +143,4 @@ async function main() {
   
 }
 
-main();
+//main();
