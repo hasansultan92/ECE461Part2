@@ -1,8 +1,9 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 const packageSchema = new mongoose.Schema({
   name: {type: String, unique: true},
-  version: {type: Array, default: [Number]},
-  repository: {type: Array, default: [String]},
+  version: {type: Array},
+  repository: {type: Array},
+  scores: {type: Array},
 });
 
 module.exports = mongoose.model('package', packageSchema);

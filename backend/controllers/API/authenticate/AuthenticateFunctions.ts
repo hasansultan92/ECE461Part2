@@ -1,11 +1,3 @@
-/**
- * The DefaultController file is a very simple one, which does not need to be changed manually,
- * unless there's a case where business logic routes the request to an entity which is not
- * the ServiceController.
- * The heavy lifting of the Controller item is done in Request.js - that is where request
- * parameters are extracted and sent to the ServiceController, and where response is handled.
- */
-
 import {log} from '../../utils/misc';
 const UserSchema = require('../../database/user-model');
 const bcrypt = require('bcryptjs');
@@ -17,15 +9,16 @@ export const isAuthValid = (token: string): boolean => {
   return true;
 };
 
+export const deleteUsers = async (): Promise<void> => {
+  await UserSchema.deleteMany();
+  return;
+};
+
 export const createAuthToken = async (user: any) => {
   // Create token
-  const token: string = jwt.sign(
-    {name: user.name},
-    process.env.TOKEN_KEY,
-    {
-      expiresIn: '90h',
-    }
-  );
+  const token: string = jwt.sign({name: user.name}, process.env.TOKEN_KEY, {
+    expiresIn: '90h',
+  });
   return token;
 };
 
@@ -46,9 +39,9 @@ export const CreateUser = async (req: any, res: any) => {
     // check if user already exist
     // Validate if user exist in our database
     const oldUser = await UserSchema.findOne({name: username});
-
+    console.log(oldUser);
     if (oldUser) {
-      res.status(400).send('User Already Exist. Please Login');
+      res.status(400).send('User Already Exist. Please Authenticate');
       return;
     }
 
@@ -66,19 +59,19 @@ export const CreateUser = async (req: any, res: any) => {
 
     // save user token
     user.token = await createAuthToken(user);
-    console.log(user.token)
-    await user.save()
+    console.log(user.token);
+    await user.save();
     // return new user
     res.contentType('application/json');
     res.status(200).json(user);
   } catch (e: any) {
-    console.log(e)
+    console.log(e);
     log(
       'Something went wrong while creating a new user in the CreateUser Function ',
       e.stack,
       parseInt(process.env.LOG_LEVEL!)
     );
-    res.status(400).json('bad Req');
+    res.status(400).json('Something went wrong with the creation of a new user');
   }
 };
 
@@ -93,7 +86,7 @@ export const authenticate = async (req: any, res: any) => {
 
     if (!existingUser) {
       // If user not found
-      res.status(400).json('bad Req');
+      res.status(400).json('User not found');
       return;
     }
 
@@ -109,59 +102,18 @@ export const authenticate = async (req: any, res: any) => {
     const token: string = await createAuthToken(existingUser);
     // check this line
     existingUser.token = token;
-    await existingUser.save()
+    await existingUser.save();
     // create a auth token based on the is admin parameter
     res.contentType('application/json');
     res.json(token);
   } catch (e: any) {
-    console.log(e)
+    console.log(e);
     log(
       'Something went wrong while creating a new token for the user in the Authentication function',
       e.stack,
       parseInt(process.env.LOG_LEVEL!)
     );
-    res.status(400).json('bad Req');
+    res.status(400).json('Something went wrong while creating a new token for the user');
   }
 };
-/*
-const packageByNameDelete = async (request: any, response: any) => {
 
-};
-
-const packageByNameGet = async (request: any, response: any) => {
-
-};
-
-const packageByRegExGet = async (request: any, response: any) => {
-
-};
-
-const packageCreate = async (request: any, response: any) => {
-
-};
-
-const packageDelete = async (request: any, response: any) => {
-
-};
-
-const packageRate = async (request: any, response: any) => {
-
-};
-
-const packageRetrieve = async (request: any, response: any) => {
-
-};
-
-const packageUpdate = async (request: any, response: any) => {
-
-};
-
-const packagesList = async (request: any, response: any) => {
-
-};
-
-const registryReset = async (request: any, response: any) => {
-
-};
-
-*/

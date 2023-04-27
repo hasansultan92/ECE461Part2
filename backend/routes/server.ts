@@ -21,8 +21,8 @@ const app = express();
 
 try {
   // Backend configuration
-  app.use(bodyParser.urlencoded({extended: false}));
-  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({extended: false, limit: '50mb'}));
+  app.use(bodyParser.json({limit: '50mb'}));
   app.use(cors());
 
   //Initialize the route endpoint and modules being passed
@@ -34,6 +34,6 @@ try {
     console.log(`Server is active on Port : ${port}`);
   });
 } catch (error: any) {
-  console.error(error)
+  console.error(error);
   log(error, error.stack, level);
 }
