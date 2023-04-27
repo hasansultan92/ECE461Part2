@@ -29,25 +29,14 @@ const savePackageToDb = async (
   url: string,
   score: SCORE_OUT
 ): Promise<void> => {
-  const packageInfo = await packageSchema.findOne({
+  const newPackage = await packageSchema.create({
     name: name,
+    version: Array(version),
+    repository: Array(url),
+    scores: Array(score),
   });
-  //console.log(score, Array(score));
-  if (!packageInfo) {
-    const newPackage = await packageSchema.create({
-      name: name,
-      version: Array(version),
-      repository: Array(url),
-      scores: Array(score),
-    });
-    await newPackage.save();
-    return;
-  } else {
-    // just push to the existing database structure
-    console.log(packageInfo);
-
-    // Extract the version numbers and see if they exist
-  }
+  await newPackage.save();
+  return;
 };
 
 export const createPackage = async (req: any, res: any) => {
@@ -76,8 +65,7 @@ export const createPackage = async (req: any, res: any) => {
       // check validity of the URL (function call)
       const result: SCORE_OUT = await metricCalculatorProgram(URL);
       //console.log(result.Threshold)
-      if (result.Valid == 1) {
-        // Success handler
+      if (result.Status == 1) {
         // Send the package to the database, perform a git clone
         await child_process.spawn(
           `cd ./backend/controllers/API/packages && git clone ${result.URL}`
@@ -94,14 +82,14 @@ export const createPackage = async (req: any, res: any) => {
         );
         successHandler(200, {}, req, res);
         return;
-      } else if (result.Valid == -2) {
+      } else if (result.Status == -2) {
         errorHandler(400, 'This package did not have a valid URL', req, res);
         return;
-      } else if (result.Valid == -1) {
+      } else if (result.Status == -1) {
         errorHandler(400, 'This package does not meet our threshold', req, res);
         return;
       }
-      // perform the git clone process
+      // Using the content field
     } else if (Content != '') {
       base64_decode(Content, './backend/controllers/API/packages/new.zip');
       // perform the unzip process
@@ -109,13 +97,10 @@ export const createPackage = async (req: any, res: any) => {
         `cd ./backend/controllers/API/packages/ && unzip new.zip`
       );
       const packageJson = require('../packages/package.json');
-      console.log(packageJson.repository.url);
-      if (packageJson.url || !packageJson.repository.url) {
+      if (packageJson.repository == undefined || packageJson.url == undefined) {
         errorHandler(400, 'Could not find a link to the package', req, res);
       } else {
-        // Empty everything that was created
-        const packageURL: string =
-          packageJson.url || packageJson.repository.url;
+        const packageURL: any = packageJson.repository.url || packageJson.url;
         let name: any =
           packageURL.match(
             '(https|git)(://|@)([^/:]+)[/:]([^/:]+)/(.+).git$'
@@ -126,7 +111,7 @@ export const createPackage = async (req: any, res: any) => {
         console.log(name);
         let existingPackage = await packageSchema.findOne({name});
         if (existingPackage) {
-          console.log(existingPackage);
+          //console.log(existingPackage);
           if (existingPackage.version.indexOf(packageJson.version) != -1) {
             // This package already exists. Return as is
             console.log('This package already exists');
@@ -144,14 +129,10 @@ export const createPackage = async (req: any, res: any) => {
                 },
               }
             );
-            if (existingPackage) {
-              console.log('Just saved a new package');
-              successHandler(200, {}, req, res);
-              return;
-            } else {
-              errorHandler(400, 'Failed to ingest the package', req, res);
-              return;
-            }
+            console.log(existingPackage);
+            console.log('Just saved a new package');
+            successHandler(200, {}, req, res);
+            return;
           }
         } else {
           const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
@@ -174,7 +155,9 @@ export const createPackage = async (req: any, res: any) => {
       e,
       parseInt(process.env.LOG_LEVEL!)
     );
+    errorHandler(400, 'Failed to ingest the package', req, res);
   } finally {
+    // Empty everything that was created
     child_process.execSync(
       `rm -rf ./backend/controllers/API/packages/ && mkdir ./backend/controllers/API/packages`
     );
@@ -199,10 +182,11 @@ export const deletePackage = async (req: any, res: any) => {
     return;
   }
 
-  // might need to fix this potentially
   const packageInfo = await packageSchema.findOneAndRemove({
     name: req.params.name,
   });
+
+  // potentially need to remove the line below
   successHandler(200, {}, req, res);
   return;
 };

@@ -4,9 +4,22 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 export const isAuthValid = (token: string): boolean => {
-  // @TODO add functionality to decrypt the token and then compare with the Hashed password in the database
   // Return false if the token is expired or if the token was fake
-  return true;
+  try {
+    var decoded = jwt.verify(token, process.env.TOKEN_KEY);
+    return true;
+  } catch (e: any) {
+    return false;
+  }
+};
+
+export const isAdmin = (token: string): boolean => {
+  try {
+    var decoded = jwt.verify(token, process.env.TOKEN_KEY);
+    return true;
+  } catch (e: any) {
+    return false;
+  }
 };
 
 export const deleteUsers = async (): Promise<void> => {
@@ -14,11 +27,15 @@ export const deleteUsers = async (): Promise<void> => {
   return;
 };
 
-export const createAuthToken = async (user: any) => {
+export const createAuthToken = async (user: any, isAdmin: boolean) => {
   // Create token
-  const token: string = jwt.sign({name: user.name}, process.env.TOKEN_KEY, {
-    expiresIn: '90h',
-  });
+  const token: string = jwt.sign(
+    {name: user.name, isAdmin: isAdmin},
+    process.env.TOKEN_KEY,
+    {
+      expiresIn: '90h',
+    }
+  );
   return token;
 };
 
@@ -58,7 +75,7 @@ export const CreateUser = async (req: any, res: any) => {
     });
 
     // save user token
-    user.token = await createAuthToken(user);
+    user.token = await createAuthToken(user, isAdmin);
     console.log(user.token);
     await user.save();
     // return new user
@@ -71,7 +88,9 @@ export const CreateUser = async (req: any, res: any) => {
       e.stack,
       parseInt(process.env.LOG_LEVEL!)
     );
-    res.status(400).json('Something went wrong with the creation of a new user');
+    res
+      .status(400)
+      .json('Something went wrong with the creation of a new user');
   }
 };
 
@@ -99,7 +118,7 @@ export const authenticate = async (req: any, res: any) => {
       return;
     }
 
-    const token: string = await createAuthToken(existingUser);
+    const token: string = await createAuthToken(existingUser, User.isAdmin);
     // check this line
     existingUser.token = token;
     await existingUser.save();
@@ -113,7 +132,8 @@ export const authenticate = async (req: any, res: any) => {
       e.stack,
       parseInt(process.env.LOG_LEVEL!)
     );
-    res.status(400).json('Something went wrong while creating a new token for the user');
+    res
+      .status(400)
+      .json('Something went wrong while creating a new token for the user');
   }
 };
-
