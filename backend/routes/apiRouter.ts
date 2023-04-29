@@ -9,12 +9,11 @@ import {
 } from '../controllers/API/authenticate/AuthenticateFunctions';
 import {
   createPackage,
-  deletePackage,
-  findById,
 } from '../controllers/API/package/packageController';
-import {findByIdAndDelete, resetReg} from '../controllers/API/reset/delete';
+import {deletePackage, findByIdAndDelete, resetReg} from '../controllers/API/reset/delete';
 import {
   fileTobase64,
+  findById,
   findByName,
 } from '../controllers/API/package/retrievePackage';
 

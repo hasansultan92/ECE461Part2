@@ -21,10 +21,14 @@ export const deletePackages = async (): Promise<void> => {
   return;
 };
 
-const base64_decode = (base64str: any, file: any) => {
-  var buffer = Buffer.from(base64str, 'base64');
-  fs.writeFileSync(file, buffer);
-  console.log('******** Zip created from base64 encoded string ********');
+export const base64_decode = (base64str: any, file: any) => {
+  try {
+    var buffer = Buffer.from(base64str, 'base64');
+    fs.writeFileSync(file, buffer);
+    console.log('******** Zip created from base64 encoded string ********');
+  } catch (e: any) {
+    console.log('In function to convert the base64', e);
+  }
 };
 
 const savePackageToDb = async (
@@ -33,7 +37,7 @@ const savePackageToDb = async (
   url: string,
   score: SCORE_OUT,
   TokenInformation: TokenInformation
-): Promise<void> => {
+) => {
   var id = new mongoose.Types.ObjectId();
   console.log(id);
   const newPackage = await packageSchema.create({
@@ -58,7 +62,7 @@ const savePackageToDb = async (
     },
   });
   await newPackage.save();
-  return;
+  return id;
 };
 
 export const createPackage = async (req: any, res: any) => {
@@ -73,14 +77,21 @@ export const createPackage = async (req: any, res: any) => {
     const authToken: string = req.headers['x-authorization'];
     if (!authToken) {
       // Send out error about the token not existing
+      if (process.env.PRODUCTION == '1') {
+        console.log('Authorization token not found');
+      }
       errorHandler(400, 'Authorization token was not found', req, res);
       return;
     }
     const valid: boolean = isAuthValid(authToken);
     if (!valid) {
+      if (process.env.PRODUCTION == '1') {
+        console.log('Authorization token was invalid');
+      }
       errorHandler(400, 'Authorization token in valid', req, res);
       return;
     }
+    console.log('*********** PACKAGE IS BEING CREATED **********');
     // Create the package information
     // Get the field that is valid
     if (URL != '') {
@@ -89,6 +100,7 @@ export const createPackage = async (req: any, res: any) => {
       //console.log(result.Threshold)
       if (result.Status == 1) {
         // Send the package to the database, perform a git clone
+        if (process.env.PRODUCTION == '1') console.log('Cloning using the URL');
         await child_process.spawn(
           `cd ./backend/controllers/API/packages && git clone ${result.URL}`
         );
@@ -175,8 +187,13 @@ export const createPackage = async (req: any, res: any) => {
                 },
               }
             );
-
-            console.log('Just saved a new package');
+            base64_decode(
+              Content,
+              `./backend/packages/${existingId}:${packageJson.version}.zip`
+            );
+            console.log(
+              '**************** CREATED A NEW PACKAGE ****************'
+            );
             successHandler(200, {}, req, res);
             return;
           }
@@ -185,12 +202,16 @@ export const createPackage = async (req: any, res: any) => {
           const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
           const userInfo: TokenInformation = await userData(authToken);
 
-          savePackageToDb(
+          const packageId = await savePackageToDb(
             packageJson.name,
             packageJson.version,
             packageURL,
             result,
             userInfo
+          );
+          base64_decode(
+            Content,
+            `./backend/packages/${packageId}:${packageJson.version}.zip`
           );
           successHandler(200, {msg: 'Done'}, req, res);
           return;
@@ -214,71 +235,5 @@ export const createPackage = async (req: any, res: any) => {
   }
 };
 
-export const findById = async (req: any, res: any) => {
-  let packageId: any = req.params.id;
-  //console.log(req.headers['authorization'])
-  if (!packageId) {
-    errorHandler(400, 'The package id is not valid', req, res);
-    return;
-  }
-  const authToken: string = req.headers['x-authorization'];
-  if (!authToken) {
-    // Send out error about the token not existing
-    errorHandler(400, 'Authorization token was not found', req, res);
-    return;
-  }
-  const valid: boolean = isAuthValid(authToken);
-  if (!valid) {
-    errorHandler(400, 'Authorization token in valid', req, res);
-    return;
-  }
 
-  packageId = packageId.split(':');
-  const IndexIdDb = packageId[0];
-  const VersionNumber = packageId[1];
-  const existingPackage = packageSchema.findById(IndexIdDb);
-  if (existingPackage) {
-    // Package still exists in database
-    const VersionIndex = existingPackage.version.indexOf(VersionNumber);
 
-    res.json({
-      metadata: {
-        Name: existingPackage.name,
-        Version: VersionNumber,
-        ID: packageId,
-      },
-      data: {
-        // To be filled later
-        Content: '<string>',
-        URL: existingPackage.repository[0],
-        JSProgram: '<string>',
-      },
-    });
-    return;
-  } else {
-    errorHandler(400, 'This package does not exist anymore', req, res);
-    return;
-  }
-};
-
-export const deletePackage = async (req: any, res: any) => {
-  // Find the package
-  const authToken: string = req.headers['x-authorization'];
-  if (!authToken) {
-    errorHandler(400, 'Authorization token was not found', req, res);
-    return;
-  }
-  const tokenValid: boolean = isAuthValid(authToken);
-  if (!tokenValid) {
-    errorHandler(400, 'You are not a valid user', req, res);
-    return;
-  }
-
-  const packageInfo = await packageSchema.findOneAndRemove({
-    name: req.params.name,
-  });
-
-  // potentially need to remove the line below
-  successHandler(200, {}, req, res);
-  return;
-};

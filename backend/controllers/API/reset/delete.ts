@@ -22,7 +22,7 @@ export const resetReg = async (req: any, res: any) => {
 
     try {
       child_process.execSync(
-        `rm -rf ./backend/packages/ && rm -rf ./backend/controllers/API/packages/`
+        `rm -rf ./backend/packages/ && rm -rf ./backend/controllers/API/packages/ && mkdir ./backend/packages/ && mkdir ./backend/controllers/API/packages/ `
       );
     } catch (e: any) {
       console.log('********** failed in the resetReg Function *********');
@@ -83,7 +83,7 @@ export const findByIdAndDelete = async (req: any, res: any) => {
           }
         );
         try {
-          child_process.execSync(`rm -rf ./backend/packages/${packageId}`);
+          child_process.execSync(`rm -rf ./backend/packages/${packageId}.zip`);
         } catch (e: any) {
           console.log(
             '********** failed in the findByIdAndDelete Function *********'
@@ -95,7 +95,7 @@ export const findByIdAndDelete = async (req: any, res: any) => {
       } else if (VersionIndex == 0) {
         // Delete the whole document since the package will not exist anymore
         try {
-          child_process.execSync(`rm -rf ./backend/packages/${packageId}`);
+          child_process.execSync(`rm -rf ./backend/packages/${packageId}.zip`);
         } catch (e: any) {
           console.log(
             '********** failed in the findByIdAndDelete Function *********'
@@ -129,6 +129,46 @@ export const findByIdAndDelete = async (req: any, res: any) => {
       req,
       res
     );
+    return;
+  }
+};
+
+export const deletePackage = async (req: any, res: any) => {
+  try {
+    // Find the package
+    const authToken: string = req.headers['x-authorization'];
+    if (!authToken) {
+      errorHandler(400, 'Authorization token was not found', req, res);
+      return;
+    }
+    const tokenValid: boolean = isAuthValid(authToken);
+    if (!tokenValid) {
+      errorHandler(400, 'You are not a valid user', req, res);
+      return;
+    }
+
+    const packageInfo = await packageSchema.findOneAndRemove({
+      name: req.params.name,
+    });
+    // Find of all of the same of the existing ids
+    console.log(
+      '******* PACKAGE SELECTED TO BE DELETED ',
+      packageInfo.id,
+      '*******'
+    );
+    try {
+      child_process.execSync(`rm -f ./backend/packages/${packageInfo.id}*`);
+    } catch (e: any) {
+      console.log('********** failed in the deletePackage Function *********');
+      console.log(e);
+    }
+    successHandler(200, {}, req, res);
+    return;
+  } catch (e: any) {
+    console.log(
+      '******* SOMETHING WENT WRONG IN THE deletePackage Function *******'
+    );
+    console.log(e);
     return;
   }
 };
