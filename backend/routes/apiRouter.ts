@@ -7,10 +7,12 @@ import {
   isAdmin,
   userData,
 } from '../controllers/API/authenticate/AuthenticateFunctions';
+import {createPackage} from '../controllers/API/package/packageController';
 import {
-  createPackage,
-} from '../controllers/API/package/packageController';
-import {deletePackage, findByIdAndDelete, resetReg} from '../controllers/API/reset/delete';
+  deletePackage,
+  findByIdAndDelete,
+  resetReg,
+} from '../controllers/API/reset/delete';
 import {
   fileTobase64,
   findById,
@@ -54,16 +56,31 @@ module.exports = function (express: any) {
   router.delete(
     '/package/:id',
     async (req: Request, res: Response, next: any) => {
+      console.log(
+        req.method,
+        'Request made to delete package by ID: ',
+        req.params.id
+      );
       await findByIdAndDelete(req, res);
+      console.log('Request completed');
     }
   );
 
   router.get('/package/:id', async (req: any, res: any) => {
+    console.log(
+      req.method,
+      'Request made to find by ID: ',
+      req.params.id,
+      'from ',
+      req.ip
+    );
     await findById(req, res);
+    console.log('Requested completed');
   });
 
   router.delete('/reset', async (req: any, res: any, next: any) => {
     // Reset the system
+    console.log(req.method, 'Request made to delete the registry from ', req.ip);
     await resetReg(req, res);
   });
 
@@ -75,7 +92,7 @@ module.exports = function (express: any) {
   });
 
   router.get('/package/byName/:name', async (req: any, res: any) => {
-    console.log(req.method, 'GET Request made to fetch', req.params.name);
+    console.log(req.method, 'Request made to fetch', req.params.name, 'from ', req.ip);
     await findByName(req, res);
     console.log('Request completed');
   });

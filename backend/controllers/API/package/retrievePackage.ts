@@ -37,16 +37,17 @@ export const findById = async (req: any, res: any) => {
     packageId = packageId.split(':');
     const IndexIdDb = packageId[0];
     const VersionNumber = packageId[1];
-    const existingPackage = packageSchema.findById(IndexIdDb);
+    const existingPackage = await packageSchema.findById(IndexIdDb);
     if (existingPackage) {
       // Package still exists in database
-      const VersionIndex = existingPackage.version.indexOf(VersionNumber);
-      const Content: string = fileTobase64(`./backend/packages/${packageId}`);
+      const Content: string = fileTobase64(
+        `./backend/packages/${req.params.id}.zip`
+      );
       res.json({
         metadata: {
           Name: existingPackage.name,
           Version: VersionNumber,
-          ID: packageId,
+          ID: req.params.id,
         },
         data: {
           Content: Content,
@@ -71,6 +72,5 @@ export const findById = async (req: any, res: any) => {
     console.log(e);
   }
 };
-
 
 export const findByName = async (req: any, res: any) => {};

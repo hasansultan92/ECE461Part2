@@ -152,6 +152,7 @@ export const createPackage = async (req: any, res: any) => {
         console.log(name);
         let existingPackage = await packageSchema.findOne({name});
         if (existingPackage) {
+          console.log(existingPackage.version, packageJson.version)
           if (existingPackage.version.indexOf(packageJson.version) != -1) {
             // This package already exists. Return as is
             console.log('This package already exists');

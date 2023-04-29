@@ -51,7 +51,7 @@ export const findByIdAndDelete = async (req: any, res: any) => {
     }
 
     // Split the receiving ID
-    const packageId = req.params.id.split(':');
+    const packageId = req.params.id.split(':'); // add validation on this for version number
     const IndexIdDb = packageId[0];
     const VersionNumber = packageId[1];
     console.log(packageId);
@@ -83,7 +83,7 @@ export const findByIdAndDelete = async (req: any, res: any) => {
           }
         );
         try {
-          child_process.execSync(`rm -rf ./backend/packages/${packageId}.zip`);
+          child_process.execSync(`rm -rf ./backend/packages/${req.params.id}.zip`);
         } catch (e: any) {
           console.log(
             '********** failed in the findByIdAndDelete Function *********'
@@ -95,7 +95,7 @@ export const findByIdAndDelete = async (req: any, res: any) => {
       } else if (VersionIndex == 0) {
         // Delete the whole document since the package will not exist anymore
         try {
-          child_process.execSync(`rm -rf ./backend/packages/${packageId}.zip`);
+          child_process.execSync(`rm -rf ./backend/packages/${req.params.id}.zip`);
         } catch (e: any) {
           console.log(
             '********** failed in the findByIdAndDelete Function *********'
