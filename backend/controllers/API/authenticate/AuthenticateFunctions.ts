@@ -3,12 +3,11 @@ const UserSchema = require('../../database/user-model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-
 export interface TokenInformation {
-  name: String,
-  isAdmin: Boolean,
-  iat: Number,
-  exp: Number,
+  name: String;
+  isAdmin: Boolean;
+  iat: Number;
+  exp: Number;
 }
 export const isAuthValid = (token: string): boolean => {
   // Return false if the token is expired or if the token was fake
@@ -29,9 +28,7 @@ export const isAdmin = (token: string): boolean => {
   }
 };
 
-export const userData = (
-  token: string
-): TokenInformation => {
+export const userData = (token: string): TokenInformation => {
   try {
     var decoded = jwt.verify(token, process.env.TOKEN_KEY);
     return decoded;
@@ -55,7 +52,7 @@ export const createAuthToken = async (user: any, isAdmin: boolean) => {
       expiresIn: '90h',
     }
   );
-  return token;
+  return 'bearer' + token;
 };
 
 /* Function to create a User in the database and store their Token

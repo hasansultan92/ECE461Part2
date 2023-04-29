@@ -2,23 +2,39 @@ import {errorHandler, successHandler} from '../../utils/responseHandler';
 import {deleteUsers, isAuthValid} from '../authenticate/AuthenticateFunctions';
 import {deletePackages} from '../package/packageController';
 const packageSchema = require('../../Database/package-model');
+const child_process = require('child_process');
 
 export const resetReg = async (req: any, res: any) => {
-  const authToken: string = req.headers['x-authorization'];
-  if (!authToken) {
-    errorHandler(400, 'Authorization token was not found', req, res);
-    return;
-  }
-  const tokenValid: boolean = isAuthValid(authToken);
-  if (!tokenValid) {
-    errorHandler(400, 'You are not a valid user', req, res);
-    return;
-  }
+  try {
+    const authToken: string = req.headers['x-authorization'];
+    if (!authToken) {
+      errorHandler(400, 'Authorization token was not found', req, res);
+      return;
+    }
+    const tokenValid: boolean = isAuthValid(authToken);
+    if (!tokenValid) {
+      errorHandler(400, 'You are not a valid user', req, res);
+      return;
+    }
+    console.log('****** REGISTRY BEING DELETED! *****');
+    await deletePackages();
+    // WE ARE NOT DELETING USERS ANYMORE
 
-  await deletePackages();
-  await deleteUsers();
-  successHandler(200, {msg: 'done'}, req, res);
-  return;
+    try {
+      child_process.execSync(
+        `rm -rf ./backend/packages/ && rm -rf ./backend/controllers/API/packages/`
+      );
+    } catch (e: any) {
+      console.log('********** failed in the resetReg Function *********');
+      console.log(e);
+    }
+    //await deleteUsers();
+    successHandler(200, {msg: 'done'}, req, res);
+    return;
+  } catch (e: any) {
+    errorHandler(400, 'Something went wrong to reset the registry', req, res);
+    return;
+  }
 };
 
 export const findByIdAndDelete = async (req: any, res: any) => {
@@ -66,11 +82,26 @@ export const findByIdAndDelete = async (req: any, res: any) => {
             },
           }
         );
+        try {
+          child_process.execSync(`rm -rf ./backend/packages/${packageId}`);
+        } catch (e: any) {
+          console.log(
+            '********** failed in the findByIdAndDelete Function *********'
+          );
+          console.log(e);
+        }
         successHandler(200, {}, req, res);
         return;
       } else if (VersionIndex == 0) {
         // Delete the whole document since the package will not exist anymore
-
+        try {
+          child_process.execSync(`rm -rf ./backend/packages/${packageId}`);
+        } catch (e: any) {
+          console.log(
+            '********** failed in the findByIdAndDelete Function *********'
+          );
+          console.log(e);
+        }
         existingPackage = await packageSchema.findByIdAndDelete(IndexIdDb);
         if (existingPackage) {
           successHandler(200, {}, req, res);

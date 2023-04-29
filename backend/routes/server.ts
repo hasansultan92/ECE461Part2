@@ -26,6 +26,14 @@ try {
   app.use(cors());
 
   //Initialize the route endpoint and modules being passed
+  try {
+    const child_process = require('child_process');
+    child_process.execSync(
+      `mkdir ./backend/packages/ && mkdir ./backend/controllers/API/packages/`
+    );
+  } catch (e: any) {
+    //console.log(e);
+  }
   const router = require('./apiRouter')(express);
   app.use('/', router);
 
