@@ -89,7 +89,7 @@ export async function metricCalculatorProgram(repo_url: string): Promise<SCORE_O
         const tmp_dir: string = await create_tmp(); 
         const success = await clone_and_install(tmp_dir, url_parse.github_repo_url);
 
-        const pyStart = 'python3 fileCounter.py ';
+        const pyStart = 'python3 /home/robinchild01/persistentServer2/ECE461Part2/fileCounter.py ';
         const pyExec = pyStart.concat(tmp_dir).concat('/package');
         execSync(pyExec);
         //console.log(pyExec);
