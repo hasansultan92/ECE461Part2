@@ -12,7 +12,9 @@ export const resetReg = async (req: any, res: any) => {
       errorHandler(400, 'Authorization token was not found', req, res);
       return;
     }
-    const tokenValid: boolean = isAuthValid(authToken);
+    const tokenValid: boolean = isAuthValid(
+      authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim()
+    );
     if (!tokenValid) {
       errorHandler(400, 'You are not a valid user', req, res);
       return;
