@@ -1,11 +1,7 @@
 import {Request, Response} from 'express';
 import {
   CreateUser,
-  createAuthToken,
   authenticate,
-  isAuthValid,
-  isAdmin,
-  userData,
 } from '../controllers/API/authenticate/AuthenticateFunctions';
 import {createPackage} from '../controllers/API/package/packageController';
 import {
@@ -17,6 +13,7 @@ import {
   fileTobase64,
   findById,
   findByName,
+  retrieveScores,
 } from '../controllers/API/package/retrievePackage';
 
 module.exports = function (express: any) {
@@ -80,7 +77,11 @@ module.exports = function (express: any) {
 
   router.delete('/reset', async (req: any, res: any, next: any) => {
     // Reset the system
-    console.log(req.method, 'Request made to delete the registry from ', req.ip);
+    console.log(
+      req.method,
+      'Request made to delete the registry from ',
+      req.ip
+    );
     await resetReg(req, res);
   });
 
@@ -92,8 +93,26 @@ module.exports = function (express: any) {
   });
 
   router.get('/package/byName/:name', async (req: any, res: any) => {
-    console.log(req.method, 'Request made to fetch', req.params.name, 'from ', req.ip);
+    console.log(
+      req.method,
+      'Request made to fetch',
+      req.params.name,
+      'from ',
+      req.ip
+    );
     await findByName(req, res);
+    console.log('Request completed');
+  });
+
+  router.get('/package/:id/rate', async (req: any, res: any) => {
+    console.log(
+      req.method,
+      'Request made to rate package',
+      req.params.id,
+      'from ',
+      req.ip
+    );
+    await retrieveScores(req, res);
     console.log('Request completed');
   });
   return router;
