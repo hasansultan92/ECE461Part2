@@ -37,6 +37,7 @@ module.exports = function (express: any) {
   });
 
   router.post('/register', async (req: Request, res: Response, next: any) => {
+	  console.log("Request made to register");
     await CreateUser(req, res);
   });
 
