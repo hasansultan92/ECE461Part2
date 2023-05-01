@@ -1,5 +1,5 @@
 import {log} from '../../utils/misc';
-const UserSchema = require('../../database/user-model');
+const UserSchema = require('../../Database/user-model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 

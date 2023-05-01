@@ -79,6 +79,8 @@ export const createPackage = async (req: any, res: any) => {
       // Send out error about the token not existing
       if (process.env.PRODUCTION == '1') {
         console.log('Authorization token not found');
+	console.log('Printing Req.Headers');
+	console.log(req.headers);
       }
       errorHandler(400, 'Authorization token was not found', req, res);
       return;
@@ -102,11 +104,11 @@ export const createPackage = async (req: any, res: any) => {
         // Send the package to the database, perform a git clone
         if (process.env.PRODUCTION == '1') console.log('Cloning using the URL');
         await child_process.spawn(
-          `cd ./backend/controllers/API/packages && git clone ${result.URL}`
+          `cd ../controllers/API/packages && git clone ${result.URL}`
         );
 
         ///  WORK FROM HERE!
-        const packageJson = require('../packages/package.json');
+        const packageJson = require('../controllers/API/package/package.json');
         // perform the save here
         const userInfo: TokenInformation = await userData(authToken);
         savePackageToDb(
@@ -127,12 +129,12 @@ export const createPackage = async (req: any, res: any) => {
       }
       // Using the content field
     } else if (Content != '') {
-      base64_decode(Content, './backend/controllers/API/packages/new.zip');
+      base64_decode(Content, '../controllers/API/packages/new.zip');
       // perform the unzip process
       child_process.execSync(
-        `cd ./backend/controllers/API/packages/ && unzip new.zip`
+        `cd ../controllers/API/packages/ && unzip new.zip`
       );
-      const packageJson = require('../packages/package.json');
+      const packageJson = require('../controllers/API/packages/package.json');
       console.log(packageJson.repository);
       if (
         !packageJson.repository == undefined ||
@@ -190,7 +192,7 @@ export const createPackage = async (req: any, res: any) => {
             );
             base64_decode(
               Content,
-              `./backend/packages/${existingId}:${packageJson.version}.zip`
+              `../packages/${existingId}:${packageJson.version}.zip`
             );
             console.log(
               '**************** CREATED A NEW PACKAGE ****************'
@@ -212,7 +214,7 @@ export const createPackage = async (req: any, res: any) => {
           );
           base64_decode(
             Content,
-            `./backend/packages/${packageId}:${packageJson.version}.zip`
+            `../packages/${packageId}:${packageJson.version}.zip`
           );
           successHandler(200, {msg: 'Done'}, req, res);
           return;
@@ -230,7 +232,7 @@ export const createPackage = async (req: any, res: any) => {
   } finally {
     // Empty everything that was created
     child_process.execSync(
-      `rm -rf ./backend/controllers/API/packages/ && mkdir ./backend/controllers/API/packages`
+      `rm -rf ../controllers/API/packages/ && mkdir ../controllers/API/packages`
     );
     return;
   }
