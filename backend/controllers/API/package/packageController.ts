@@ -75,7 +75,9 @@ export const createPackage = async (req: any, res: any) => {
     }
 
     const authToken: string = req.headers['authorization'];
-    console.log(authToken.split('Bearer')[1].trim())
+    console.log(
+      authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim()
+    );
     if (!authToken) {
       // Send out error about the token not existing
       if (process.env.PRODUCTION == '1') {
@@ -86,7 +88,7 @@ export const createPackage = async (req: any, res: any) => {
       errorHandler(400, 'Authorization token was not found', req, res);
       return;
     }
-    const valid: boolean = isAuthValid(authToken.split('Bearer')[1].trim());
+    const valid: boolean = isAuthValid( authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim());
     if (!valid) {
       if (process.env.PRODUCTION == '1') {
         console.log('Authorization token was invalid');
@@ -111,7 +113,9 @@ export const createPackage = async (req: any, res: any) => {
         ///  WORK FROM HERE!
         const packageJson = require('../controllers/API/package/package.json');
         // perform the save here
-        const userInfo: TokenInformation = await userData(authToken.split('Bearer')[1].trim());
+        const userInfo: TokenInformation = await userData(
+          authToken.split('Bearer')[1].trim()
+        );
         savePackageToDb(
           packageJson.name,
           packageJson.version,
@@ -155,7 +159,7 @@ export const createPackage = async (req: any, res: any) => {
         console.log(name);
         let existingPackage = await packageSchema.findOne({name});
         if (existingPackage) {
-          console.log(existingPackage.version, packageJson.version)
+          console.log(existingPackage.version, packageJson.version);
           if (existingPackage.version.indexOf(packageJson.version) != -1) {
             // This package already exists. Return as is
             console.log('This package already exists');
@@ -164,7 +168,9 @@ export const createPackage = async (req: any, res: any) => {
           } else {
             // Update the previous entry
             const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
-            const userInfo: TokenInformation = await userData(authToken.split('Bearer')[1].trim());
+            const userInfo: TokenInformation = await userData(
+              authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim()
+            );
             console.log(existingPackage);
             const existingId = existingPackage._id;
             existingPackage = await packageSchema.findOneAndUpdate(
@@ -204,7 +210,9 @@ export const createPackage = async (req: any, res: any) => {
         } else {
           // Create a new entry for the package
           const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
-          const userInfo: TokenInformation = await userData(authToken.split('Bearer')[1].trim());
+          const userInfo: TokenInformation = await userData(
+            authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim()
+          );
 
           const packageId = await savePackageToDb(
             packageJson.name,
@@ -238,6 +246,3 @@ export const createPackage = async (req: any, res: any) => {
     return;
   }
 };
-
-
-
