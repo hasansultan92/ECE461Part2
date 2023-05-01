@@ -74,10 +74,8 @@ export const createPackage = async (req: any, res: any) => {
       return;
     }
 
+
     const authToken: string = req.headers['authorization'];
-    console.log(
-      authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim()
-    );
     if (!authToken) {
       // Send out error about the token not existing
       if (process.env.PRODUCTION == '1') {
@@ -88,6 +86,9 @@ export const createPackage = async (req: any, res: any) => {
       errorHandler(400, 'Authorization token was not found', req, res);
       return;
     }
+    console.log(
+      authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim()
+    );
     const valid: boolean = isAuthValid( authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim());
     if (!valid) {
       if (process.env.PRODUCTION == '1') {

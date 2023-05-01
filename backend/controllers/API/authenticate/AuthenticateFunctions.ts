@@ -54,7 +54,7 @@ export const createAuthToken = async (user: any, isAdmin: boolean) => {
       expiresIn: '90h',
     }
   );
-  return 'Bearer ' + token;
+  return 'bearer ' + token;
 };
 
 /* Function to create a User in the database and store their Token
