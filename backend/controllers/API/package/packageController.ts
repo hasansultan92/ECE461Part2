@@ -74,7 +74,8 @@ export const createPackage = async (req: any, res: any) => {
       return;
     }
 
-    const authToken: string = req.headers['x-authorization'];
+    const authToken: string = req.headers['authorization'];
+    console.log(authToken.split('Bearer')[1].trim())
     if (!authToken) {
       // Send out error about the token not existing
       if (process.env.PRODUCTION == '1') {
@@ -83,7 +84,7 @@ export const createPackage = async (req: any, res: any) => {
       errorHandler(400, 'Authorization token was not found', req, res);
       return;
     }
-    const valid: boolean = isAuthValid(authToken);
+    const valid: boolean = isAuthValid(authToken.split('Bearer')[1].trim());
     if (!valid) {
       if (process.env.PRODUCTION == '1') {
         console.log('Authorization token was invalid');
@@ -108,7 +109,7 @@ export const createPackage = async (req: any, res: any) => {
         ///  WORK FROM HERE!
         const packageJson = require('../packages/package.json');
         // perform the save here
-        const userInfo: TokenInformation = await userData(authToken);
+        const userInfo: TokenInformation = await userData(authToken.split('Bearer')[1].trim());
         savePackageToDb(
           packageJson.name,
           packageJson.version,
@@ -161,7 +162,7 @@ export const createPackage = async (req: any, res: any) => {
           } else {
             // Update the previous entry
             const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
-            const userInfo: TokenInformation = await userData(authToken);
+            const userInfo: TokenInformation = await userData(authToken.split('Bearer')[1].trim());
             console.log(existingPackage);
             const existingId = existingPackage._id;
             existingPackage = await packageSchema.findOneAndUpdate(
@@ -201,7 +202,7 @@ export const createPackage = async (req: any, res: any) => {
         } else {
           // Create a new entry for the package
           const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
-          const userInfo: TokenInformation = await userData(authToken);
+          const userInfo: TokenInformation = await userData(authToken.split('Bearer')[1].trim());
 
           const packageId = await savePackageToDb(
             packageJson.name,

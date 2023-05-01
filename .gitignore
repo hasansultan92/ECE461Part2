@@ -109,3 +109,5 @@ build/src
 build
 openapi
 .vscode
+backend/packages/*
+backend/controllers/API/packages/*
