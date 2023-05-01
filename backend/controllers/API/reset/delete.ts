@@ -8,6 +8,7 @@ export const resetReg = async (req: any, res: any) => {
   try {
     const authToken: string = req.headers['x-authorization'];
     if (!authToken) {
+      console.log('**** FAILED TO FIND TOKEN IN THE DELETE ******');
       errorHandler(400, 'Authorization token was not found', req, res);
       return;
     }
@@ -32,6 +33,7 @@ export const resetReg = async (req: any, res: any) => {
     successHandler(200, {msg: 'done'}, req, res);
     return;
   } catch (e: any) {
+    console.log(e);
     errorHandler(400, 'Something went wrong to reset the registry', req, res);
     return;
   }
@@ -83,7 +85,9 @@ export const findByIdAndDelete = async (req: any, res: any) => {
           }
         );
         try {
-          child_process.execSync(`rm -rf ./backend/packages/${req.params.id}.zip`);
+          child_process.execSync(
+            `rm -rf ./backend/packages/${req.params.id}.zip`
+          );
         } catch (e: any) {
           console.log(
             '********** failed in the findByIdAndDelete Function *********'
@@ -95,7 +99,9 @@ export const findByIdAndDelete = async (req: any, res: any) => {
       } else if (VersionIndex == 0) {
         // Delete the whole document since the package will not exist anymore
         try {
-          child_process.execSync(`rm -rf ./backend/packages/${req.params.id}.zip`);
+          child_process.execSync(
+            `rm -rf ./backend/packages/${req.params.id}.zip`
+          );
         } catch (e: any) {
           console.log(
             '********** failed in the findByIdAndDelete Function *********'

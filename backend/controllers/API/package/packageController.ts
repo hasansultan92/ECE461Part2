@@ -73,9 +73,16 @@ export const createPackage = async (req: any, res: any) => {
       errorHandler(400, 'The respective fields were not populated', req, res);
       return;
     }
-
-    const authToken: string = req.headers['authorization'];
+    try {
+      const CheckToken: string = req.headers['Authorization'];
+      console.log('Found the token in Authorization field', CheckToken);
+    } catch (e: any) {
+      console.log(e);
+    }
+    const authToken: string =
+      req.headers['x-authorization'] || req.headers['X-Authorization'];
     console.log(
+      'Found yo token in the x-auth field',
       authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim()
     );
     if (!authToken) {
@@ -86,7 +93,9 @@ export const createPackage = async (req: any, res: any) => {
       errorHandler(400, 'Authorization token was not found', req, res);
       return;
     }
-    const valid: boolean = isAuthValid( authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim());
+    const valid: boolean = isAuthValid(
+      authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim()
+    );
     if (!valid) {
       if (process.env.PRODUCTION == '1') {
         console.log('Authorization token was invalid');
@@ -167,7 +176,8 @@ export const createPackage = async (req: any, res: any) => {
             // Update the previous entry
             const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
             const userInfo: TokenInformation = await userData(
-              authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim()
+              authToken.split('Bearer')[1].trim() ||
+                authToken.split('bearer')[1].trim()
             );
             console.log(existingPackage);
             const existingId = existingPackage._id;
@@ -209,7 +219,8 @@ export const createPackage = async (req: any, res: any) => {
           // Create a new entry for the package
           const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
           const userInfo: TokenInformation = await userData(
-            authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim()
+            authToken.split('Bearer')[1].trim() ||
+              authToken.split('bearer')[1].trim()
           );
 
           const packageId = await savePackageToDb(
