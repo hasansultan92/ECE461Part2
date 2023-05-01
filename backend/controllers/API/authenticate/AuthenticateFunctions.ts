@@ -13,8 +13,10 @@ export const isAuthValid = (token: string): boolean => {
   // Return false if the token is expired or if the token was fake
   try {
     var decoded = jwt.verify(token, process.env.TOKEN_KEY);
+    console.log(decoded);
     return true;
   } catch (e: any) {
+    console.log('could not verify');
     return false;
   }
 };
@@ -52,7 +54,7 @@ export const createAuthToken = async (user: any, isAdmin: boolean) => {
       expiresIn: '90h',
     }
   );
-  return 'bearer' + token;
+  return 'Bearer ' + token;
 };
 
 /* Function to create a User in the database and store their Token
@@ -96,7 +98,7 @@ export const CreateUser = async (req: any, res: any) => {
     await user.save();
     // return new user
     res.contentType('application/json');
-    res.status(200).json(user);
+    res.status(200).json(user.token);
   } catch (e: any) {
     console.log(e);
     log(
