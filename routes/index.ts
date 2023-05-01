@@ -46,7 +46,16 @@ export async function metricCalculatorProgram(repo_url: string): Promise<SCORE_O
   create_logger();
 
   const urls = await get_urls(repo_url);
-  console.log(urls[0].github_repo_url);
+  //console.log(urls[0].github_repo_url);
+  if(urls[0].github_repo_url.includes("git://")){
+    urls[0].github_repo_url = urls[0].github_repo_url.replace("git://", "https://")
+  }
+  //console.log(urls[0].github_repo_url);
+  if(urls[0].github_repo_url.endsWith(".git")){
+    urls[0].github_repo_url = urls[0].github_repo_url.substring(0, urls[0].github_repo_url.length - 4);
+  }
+  //console.log(urls[0].github_repo_url);
+
   if(!urls[0].github_repo_url){
     console.log("oh would you look at that it is empty");
     const score: SCORE_OUT = {
@@ -75,7 +84,7 @@ export async function metricCalculatorProgram(repo_url: string): Promise<SCORE_O
       async (url_parse: URL_PARSE) => {
         const score: SCORE_OUT = {
           Status: -1,
-          URL: url_parse.original_url, // SHOULD THIS BE ORIGINAL?
+          URL: url_parse.github_repo_url, //this is the updated url
           NetScore: 0,
           RampUp: 0,
           Correctness: 0,
@@ -143,4 +152,4 @@ async function main() {
   
 }
 
-//main();
+main();
