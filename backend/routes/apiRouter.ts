@@ -116,5 +116,18 @@ module.exports = function (express: any) {
     //await retrieveScores(req, res);
     console.log('Request completed');
   });
+//ADDING CALLS FOR NOT-IMPLEMENTED FUNCTIONALITy
+  router.post('/packages', async(req: any, res: any) => {
+	  console.log("Receied request to list packages");
+  });
+  router.put('/package/:id', async(req: any, res: any)=> {
+	  console.log('Received request to put package by id (UPDATE)');
+  });
+  router.post('/package/byRegEx', async(req: any, res: any)=> {
+	  console.log('Received request to search for package by regex');
+  });
+
   return router;
 };
+
+

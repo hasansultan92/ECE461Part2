@@ -78,6 +78,7 @@ export const createPackage = async (req: any, res: any) => {
     //console.log(req.headers['authorization'])
     if (!(URL || Content)) {
 	    console.log("The respective fields were not populated");
+	    console.log(req.body);
       errorHandler(400, 'The respective fields were not populated', req, res);
       return;
     }
@@ -155,9 +156,21 @@ export const createPackage = async (req: any, res: any) => {
       console.log("Making archive with ID: " + randnum);
       base64_decode(Content, '../controllers/API/packageArchive/archive' + randnum + '.zip');
       child_process.execSync(
-        `cd ../controllers/API/packages/ && unzip new.zip`
+        `cd ../controllers/API/packages/ && unzip new.zip && mv new.zip .. && cd * && mv * .. && cd .. && mv ../new.zip .`
       );
       console.log("Current Directory is: " + process.cwd());
+     /* try
+      {
+      child_process.execSync('mv new.zip ..');
+      child_process.execSync('cd *');
+      child_process.execSync("mv * ..");
+      child_process.execSync('cd .. && mv ../new.zip .');
+      }
+      catch(e: any)
+      {
+	      console.log(e);
+	      console.log("Something weird happened ignore");
+      }*/
       const packageJson = require('/home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages/package.json');
       console.log(packageJson.repository);
       if (
