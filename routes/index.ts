@@ -142,7 +142,7 @@ export async function metricCalculatorProgram(repo_url: string): Promise<SCORE_O
 }
 
 
-async function main() {
+/*async function main() {
   create_logger();
   const args = process.argv.slice(2);
   globalThis.logger.debug(`main args: ${args}`);
@@ -152,4 +152,4 @@ async function main() {
   
 }
 
-main();
+main();*/

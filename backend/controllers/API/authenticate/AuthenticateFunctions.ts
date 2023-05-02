@@ -123,6 +123,7 @@ export const authenticate = async (req: any, res: any) => {
 
     if (!existingUser) {
       // If user not found
+	  console.log("User Not Found");
       res.status(400).json('User not found');
       return;
     }
@@ -132,6 +133,7 @@ export const authenticate = async (req: any, res: any) => {
 
     const match: boolean = await bcrypt.compare(Secret.password, userPass);
     if (!match) {
+	    console.log("Wrong Password");
       res.status(400).json('Wrong Password');
       return;
     }
@@ -140,9 +142,11 @@ export const authenticate = async (req: any, res: any) => {
     // check this line
     existingUser.token = token;
     await existingUser.save();
+    console.log("Token was: " + token);
     // create a auth token based on the is admin parameter
     res.contentType('application/json');
     res.json(token);
+    console.log("Finished Authenticate Method");
   } catch (e: any) {
     console.log(e);
     log(
