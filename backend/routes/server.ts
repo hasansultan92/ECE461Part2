@@ -29,18 +29,24 @@ try {
   try {
     const child_process = require('child_process');
     child_process.execSync(
-      `mkdir ./backend/packages/ && mkdir ./backend/controllers/API/packages/`
+      `mkdir ../packages/ && mkdir ../controllers/API/packages/`
     );
   } catch (e: any) {
     //console.log(e);
   }
   const router = require('./apiRouter')(express);
   app.use('/', router);
+  app.use(express.static('./public'));
 
   // Run the backend (magic)
   const server = app.listen(port, (req: any, res: any) => {
     console.log(`Server is active on Port : ${port}`);
   });
+
+  app.get('/', (req: any, res: any) => {
+	  res.sendFile(__dirname + "/index.html");
+  });
+
 } catch (error: any) {
   console.error(error);
   log(error, error.stack, level);

@@ -68,24 +68,19 @@ const savePackageToDb = async (
 export const createPackage = async (req: any, res: any) => {
   try {
     const {Content, URL, JSProgram} = req.body;
+    console.log(req.headers);
     //console.log(req.headers['authorization'])
     if (!(URL || Content)) {
+	    console.log("The respective fields were not populated");
       errorHandler(400, 'The respective fields were not populated', req, res);
       return;
     }
-    try {
-      const CheckToken: string = req.headers['Authorization'];
-      console.log('Found the token in Authorization field', CheckToken);
-    } catch (e: any) {
-      console.log(e);
-    }
-    const authToken: string =
-      req.headers['x-authorization'] || req.headers['X-Authorization'];
+    const authToken: string = req.headers['x-authorization'];
     console.log(
-      'Found yo token in the x-auth field',
-      authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim()
+      'Found yo token in the x-auth field', authToken.split('bearer')[1].trim()
     );
-    if (!authToken) {
+
+    if (authToken == "") {
       // Send out error about the token not existing
       if (process.env.PRODUCTION == '1') {
         console.log('Authorization token not found');
@@ -96,7 +91,7 @@ export const createPackage = async (req: any, res: any) => {
       return;
     }
     const valid: boolean = isAuthValid(
-      authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim()
+      authToken.split('bearer')[1].trim()
     );
 
     if (!valid) {
@@ -124,7 +119,7 @@ export const createPackage = async (req: any, res: any) => {
         const packageJson = require('../controllers/API/package/package.json');
         // perform the save here
         const userInfo: TokenInformation = await userData(
-          authToken.split('Bearer')[1].trim()
+          authToken.split('bearer')[1].trim()
         );
         savePackageToDb(
           packageJson.name,
@@ -136,9 +131,11 @@ export const createPackage = async (req: any, res: any) => {
         successHandler(200, {}, req, res);
         return;
       } else if (result.Status == -2) {
+	      console.log("This package did not have a valid URL");
         errorHandler(400, 'This package did not have a valid URL', req, res);
         return;
       } else if (result.Status == -1) {
+	      console.log("This package does not meet our threshold");
         errorHandler(400, 'This package does not meet our threshold', req, res);
         return;
       }
@@ -155,6 +152,7 @@ export const createPackage = async (req: any, res: any) => {
         !packageJson.repository == undefined ||
         !packageJson.url == undefined
       ) {
+	      console.log("Could not find a link to the package");
         errorHandler(400, 'Could not find a link to the package', req, res);
         return;
       } else {
@@ -179,8 +177,7 @@ export const createPackage = async (req: any, res: any) => {
             // Update the previous entry
             const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
             const userInfo: TokenInformation = await userData(
-              authToken.split('Bearer')[1].trim() ||
-                authToken.split('bearer')[1].trim()
+              authToken.split('bearer')[1].trim()
             );
             console.log(existingPackage);
             const existingId = existingPackage._id;
@@ -222,7 +219,6 @@ export const createPackage = async (req: any, res: any) => {
           // Create a new entry for the package
           const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
           const userInfo: TokenInformation = await userData(
-            authToken.split('Bearer')[1].trim() ||
               authToken.split('bearer')[1].trim()
           );
 
@@ -237,6 +233,7 @@ export const createPackage = async (req: any, res: any) => {
             Content,
             `../packages/${packageId}:${packageJson.version}.zip`
           );
+	  console.log("Finished in the final else");
           successHandler(200, {msg: 'Done'}, req, res);
           return;
         }

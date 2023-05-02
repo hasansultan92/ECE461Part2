@@ -13,9 +13,10 @@ export const resetReg = async (req: any, res: any) => {
       return;
     }
     const tokenValid: boolean = isAuthValid(
-      authToken.split('Bearer')[1].trim() || authToken.split('bearer')[1].trim()
+      authToken.split('bearer')[1].trim()
     );
     if (!tokenValid) {
+	    console.log("You are not a valid user");
       errorHandler(400, 'You are not a valid user', req, res);
       return;
     }
@@ -25,7 +26,7 @@ export const resetReg = async (req: any, res: any) => {
 
     try {
       child_process.execSync(
-        `rm -rf ./backend/packages/ && rm -rf ./backend/controllers/API/packages/ && mkdir ./backend/packages/ && mkdir ./backend/controllers/API/packages/ `
+        `rm -rf ../packages/ && rm -rf ../controllers/API/packages/ && mkdir ../packages/ && mkdir ../controllers/API/packages/ `
       );
     } catch (e: any) {
       console.log('********** failed in the resetReg Function *********');
@@ -45,11 +46,13 @@ export const findByIdAndDelete = async (req: any, res: any) => {
   try {
     const authToken: string = req.headers['x-authorization'];
     if (!authToken) {
+	    console.log("Authorization token was not found");
       errorHandler(400, 'Authorization token was not found', req, res);
       return;
     }
     const tokenValid: boolean = isAuthValid(authToken);
     if (!tokenValid) {
+	    console.log("You are not a valid user");
       errorHandler(400, 'You are not a valid user', req, res);
       return;
     }
@@ -88,7 +91,7 @@ export const findByIdAndDelete = async (req: any, res: any) => {
         );
         try {
           child_process.execSync(
-            `rm -rf ./backend/packages/${req.params.id}.zip`
+            `rm -rf ../packages/${req.params.id}.zip`
           );
         } catch (e: any) {
           console.log(
@@ -102,7 +105,7 @@ export const findByIdAndDelete = async (req: any, res: any) => {
         // Delete the whole document since the package will not exist anymore
         try {
           child_process.execSync(
-            `rm -rf ./backend/packages/${req.params.id}.zip`
+            `rm -rf ../packages/${req.params.id}.zip`
           );
         } catch (e: any) {
           console.log(
@@ -122,10 +125,12 @@ export const findByIdAndDelete = async (req: any, res: any) => {
           );
         }
       } else {
+	      console.log("This package version does not exist");
         errorHandler(400, 'This package version does not exist', req, res);
         return;
       }
     } else {
+	    console.log("This package does not exist");
       errorHandler(400, 'This package does not exist', req, res);
       return;
     }
@@ -149,8 +154,9 @@ export const deletePackage = async (req: any, res: any) => {
       errorHandler(400, 'Authorization token was not found', req, res);
       return;
     }
-    const tokenValid: boolean = isAuthValid(authToken);
+    const tokenValid: boolean = isAuthValid(authToken.split('bearer')[1].trim());
     if (!tokenValid) {
+	    console.log("You are not a valid user");
       errorHandler(400, 'You are not a valid user', req, res);
       return;
     }
