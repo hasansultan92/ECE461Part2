@@ -69,6 +69,12 @@ export const createPackage = async (req: any, res: any) => {
   try {
     const {Content, URL, JSProgram} = req.body;
     console.log(req.headers);
+    if(Content) {
+	    console.log("Content field is set");
+    }
+    if(URL) {
+	    console.log("URL field is set, URL is: " + URL);
+    }
     //console.log(req.headers['authorization'])
     if (!(URL || Content)) {
 	    console.log("The respective fields were not populated");
@@ -104,8 +110,10 @@ export const createPackage = async (req: any, res: any) => {
     console.log('*********** PACKAGE IS BEING CREATED **********');
     // Create the package information
     // Get the field that is valid
-    if (URL != '') {
+    if (URL != '' && URL != null) {
       // check validity of the URL (function call)
+	console.log("Sending URL to metricCalculator");
+	console.log("URL: " + URL);
       const result: SCORE_OUT = await metricCalculatorProgram(URL);
       //console.log(result.Threshold)
       if (result.Status == 1) {
@@ -118,7 +126,7 @@ export const createPackage = async (req: any, res: any) => {
         ///  WORK FROM HERE!
         const packageJson = require('../controllers/API/package/package.json');
         // perform the save here
-        const userInfo: TokenInformation = await userData(
+       const userInfo: TokenInformation = await userData(
           authToken.split('bearer')[1].trim()
         );
         savePackageToDb(
@@ -143,10 +151,14 @@ export const createPackage = async (req: any, res: any) => {
     } else if (Content != '') {
       base64_decode(Content, '../controllers/API/packages/new.zip');
       // perform the unzip process
+      var randnum = Math.random()
+      console.log("Making archive with ID: " + randnum);
+      base64_decode(Content, '../controllers/API/packageArchive/archive' + randnum + '.zip');
       child_process.execSync(
         `cd ../controllers/API/packages/ && unzip new.zip`
       );
-      const packageJson = require('../controllers/API/packages/package.json');
+      console.log("Current Directory is: " + process.cwd());
+      const packageJson = require('/home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages/package.json');
       console.log(packageJson.repository);
       if (
         !packageJson.repository == undefined ||
@@ -167,6 +179,7 @@ export const createPackage = async (req: any, res: any) => {
         console.log(name);
         let existingPackage = await packageSchema.findOne({name});
         if (existingPackage) {
+		console.log("Found exisitng package");
           console.log(existingPackage.version, packageJson.version);
           if (existingPackage.version.indexOf(packageJson.version) != -1) {
             // This package already exists. Return as is
@@ -175,6 +188,7 @@ export const createPackage = async (req: any, res: any) => {
             return;
           } else {
             // Update the previous entry
+	    console.log("Updating previous entry with package URL: " + packageURL);
             const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
             const userInfo: TokenInformation = await userData(
               authToken.split('bearer')[1].trim()
@@ -249,7 +263,7 @@ export const createPackage = async (req: any, res: any) => {
     errorHandler(400, 'Failed to ingest the package', req, res);
   } finally {
     // Empty everything that was created
-    child_process.execSync(
+   	child_process.execSync(
       `rm -rf ../controllers/API/packages/ && mkdir ../controllers/API/packages`
     );
     return;

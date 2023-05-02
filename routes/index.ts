@@ -44,8 +44,10 @@ function net_score_formula(subscores: SCORE_OUT): number {
 
 export async function metricCalculatorProgram(repo_url: string): Promise<SCORE_OUT> {
   create_logger();
+  console.log("Received URL: " + repo_url);
 
   const urls = await get_urls(repo_url);
+  console.log("Logging urls file");
   //console.log(urls[0].github_repo_url);
   if(urls[0].github_repo_url.includes("git://")){
     urls[0].github_repo_url = urls[0].github_repo_url.replace("git://", "https://")
