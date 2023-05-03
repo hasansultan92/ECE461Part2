@@ -16,7 +16,7 @@ export const resetReg = async (req: any, res: any) => {
       authToken.split('bearer')[1].trim()
     );
     if (!tokenValid) {
-	    console.log("You are not a valid user");
+      console.log('You are not a valid user');
       errorHandler(400, 'You are not a valid user', req, res);
       return;
     }
@@ -46,14 +46,16 @@ export const findByIdAndDelete = async (req: any, res: any) => {
   try {
     const authToken: string = req.headers['x-authorization'];
     if (!authToken) {
-	    console.log("Authorization token was not found");
       errorHandler(400, 'Authorization token was not found', req, res);
+      console.log('Authorization token was not found');
       return;
     }
-    const tokenValid: boolean = isAuthValid(authToken);
+    const tokenValid: boolean = isAuthValid(
+      authToken.split('bearer')[1].trim()
+    );
     if (!tokenValid) {
-	    console.log("You are not a valid user");
       errorHandler(400, 'You are not a valid user', req, res);
+      console.log('You are not a valid user');
       return;
     }
 
@@ -90,9 +92,7 @@ export const findByIdAndDelete = async (req: any, res: any) => {
           }
         );
         try {
-          child_process.execSync(
-            `rm -rf ../packages/${req.params.id}.zip`
-          );
+          child_process.execSync(`rm -rf ../packages/${req.params.id}.zip`);
         } catch (e: any) {
           console.log(
             '********** failed in the findByIdAndDelete Function *********'
@@ -100,13 +100,12 @@ export const findByIdAndDelete = async (req: any, res: any) => {
           console.log(e);
         }
         successHandler(200, {}, req, res);
+        console.log("Successfully deleted by id")
         return;
       } else if (VersionIndex == 0) {
         // Delete the whole document since the package will not exist anymore
         try {
-          child_process.execSync(
-            `rm -rf ../packages/${req.params.id}.zip`
-          );
+          child_process.execSync(`rm -rf ../packages/${req.params.id}.zip`);
         } catch (e: any) {
           console.log(
             '********** failed in the findByIdAndDelete Function *********'
@@ -125,12 +124,12 @@ export const findByIdAndDelete = async (req: any, res: any) => {
           );
         }
       } else {
-	      console.log("This package version does not exist");
+        console.log('This package version does not exist');
         errorHandler(400, 'This package version does not exist', req, res);
         return;
       }
     } else {
-	    console.log("This package does not exist");
+      console.log('This package does not exist');
       errorHandler(400, 'This package does not exist', req, res);
       return;
     }
@@ -154,9 +153,11 @@ export const deletePackage = async (req: any, res: any) => {
       errorHandler(400, 'Authorization token was not found', req, res);
       return;
     }
-    const tokenValid: boolean = isAuthValid(authToken.split('bearer')[1].trim());
+    const tokenValid: boolean = isAuthValid(
+      authToken.split('bearer')[1].trim()
+    );
     if (!tokenValid) {
-	    console.log("You are not a valid user");
+      console.log('You are not a valid user');
       errorHandler(400, 'You are not a valid user', req, res);
       return;
     }
@@ -177,6 +178,7 @@ export const deletePackage = async (req: any, res: any) => {
       console.log(e);
     }
     successHandler(200, {}, req, res);
+    console.log("Successfully deleted the package by name")
     return;
   } catch (e: any) {
     console.log(

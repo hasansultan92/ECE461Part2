@@ -69,37 +69,36 @@ export const createPackage = async (req: any, res: any) => {
   try {
     const {Content, URL, JSProgram} = req.body;
     console.log(req.headers);
-    if(Content) {
-	    console.log("Content field is set");
+    if (Content) {
+      console.log('Content field is set');
     }
-    if(URL) {
-	    console.log("URL field is set, URL is: " + URL);
+    if (URL) {
+      console.log('URL field is set, URL is: ' + URL);
     }
     //console.log(req.headers['authorization'])
     if (!(URL || Content)) {
-	    console.log("The respective fields were not populated");
-	    console.log(req.body);
+      console.log('The respective fields were not populated');
+      console.log(req.body);
       errorHandler(400, 'The respective fields were not populated', req, res);
       return;
     }
     const authToken: string = req.headers['x-authorization'];
     console.log(
-      'Found yo token in the x-auth field', authToken.split('bearer')[1].trim()
+      'Found yo token in the x-auth field',
+      authToken.split('bearer')[1].trim()
     );
 
-    if (authToken == "") {
+    if (authToken == '') {
       // Send out error about the token not existing
       if (process.env.PRODUCTION == '1') {
         console.log('Authorization token not found');
-	console.log('Printing Req.Headers');
-	console.log(req.headers);
+        console.log('Printing Req.Headers');
+        console.log(req.headers);
       }
       errorHandler(400, 'Authorization token was not found', req, res);
       return;
     }
-    const valid: boolean = isAuthValid(
-      authToken.split('bearer')[1].trim()
-    );
+    const valid: boolean = isAuthValid(authToken.split('bearer')[1].trim());
 
     if (!valid) {
       if (process.env.PRODUCTION == '1') {
@@ -113,53 +112,73 @@ export const createPackage = async (req: any, res: any) => {
     // Get the field that is valid
     if (URL != '' && URL != null) {
       // check validity of the URL (function call)
-	console.log("Sending URL to metricCalculator");
-	console.log("URL: " + URL);
+      console.log('Sending URL to metricCalculator');
+      console.log('URL: ' + URL);
       const result: SCORE_OUT = await metricCalculatorProgram(URL);
       //console.log(result.Threshold)
       if (result.Status == 1) {
         // Send the package to the database, perform a git clone
         if (process.env.PRODUCTION == '1') console.log('Cloning using the URL');
-        await child_process.spawn(
+        await child_process.execSync(
           `cd ../controllers/API/packages && git clone ${result.URL}`
         );
 
         ///  WORK FROM HERE!
         const packageJson = require('../controllers/API/package/package.json');
         // perform the save here
-       const userInfo: TokenInformation = await userData(
+        const userInfo: TokenInformation = await userData(
           authToken.split('bearer')[1].trim()
         );
-        savePackageToDb(
+        const packageId = savePackageToDb(
           packageJson.name,
           packageJson.version,
           result.URL,
           result,
           userInfo
         );
-        successHandler(200, {}, req, res);
+        successHandler(
+          200,
+          {
+            metadata: {
+              Name: packageJson.name,
+              Version: packageJson.version,
+              ID: packageId,
+            },
+            data: {
+              Content: Content,
+              URL: URL,
+              JSProgram: '',
+            },
+          },
+          req,
+          res
+        );
+        console.log('******** PACKAGE CREATION VIA LINK WORKING ********');
         return;
       } else if (result.Status == -2) {
-	      console.log("This package did not have a valid URL");
         errorHandler(400, 'This package did not have a valid URL', req, res);
+        console.log('This package did not have a valid URL');
         return;
       } else if (result.Status == -1) {
-	      console.log("This package does not meet our threshold");
         errorHandler(400, 'This package does not meet our threshold', req, res);
+        console.log('This package does not meet our threshold');
         return;
       }
       // Using the content field
     } else if (Content != '') {
       base64_decode(Content, '../controllers/API/packages/new.zip');
       // perform the unzip process
-      var randnum = Math.random()
-      console.log("Making archive with ID: " + randnum);
-      base64_decode(Content, '../controllers/API/packageArchive/archive' + randnum + '.zip');
+      var randnum = Math.random();
+      console.log('Making archive with ID: ' + randnum);
+      base64_decode(
+        Content,
+        '../controllers/API/packageArchive/archive' + randnum + '.zip'
+      );
       child_process.execSync(
         `cd ../controllers/API/packages/ && unzip new.zip && mv new.zip .. && cd * && mv * .. && cd .. && mv ../new.zip .`
       );
-      console.log("Current Directory is: " + process.cwd());
-     /* try
+      console.log('Current Directory is: ' + process.cwd());
+      /* try
       {
       child_process.execSync('mv new.zip ..');
       child_process.execSync('cd *');
@@ -177,7 +196,7 @@ export const createPackage = async (req: any, res: any) => {
         !packageJson.repository == undefined ||
         !packageJson.url == undefined
       ) {
-	      console.log("Could not find a link to the package");
+        console.log('Could not find a link to the package');
         errorHandler(400, 'Could not find a link to the package', req, res);
         return;
       } else {
@@ -192,21 +211,39 @@ export const createPackage = async (req: any, res: any) => {
         console.log(name);
         let existingPackage = await packageSchema.findOne({name});
         if (existingPackage) {
-		console.log("Found exisitng package");
+          console.log('Found exisitng package');
           console.log(existingPackage.version, packageJson.version);
           if (existingPackage.version.indexOf(packageJson.version) != -1) {
             // This package already exists. Return as is
-            console.log('This package already exists');
-            successHandler(200, {}, req, res);
+            successHandler(
+              200,
+              {
+                metadata: {
+                  Name: packageJson.name,
+                  Version: packageJson.version,
+                  ID: existingPackage._id + ':' + packageJson.version,
+                },
+                data: {
+                  Content: Content,
+                  URL: existingPackage.repository[0],
+                  JSProgram: '',
+                },
+              },
+              req,
+              res
+            );
+            console.log('***** THE PACKAGE ALREADY EXISTED IN OUR DB *****');
             return;
           } else {
             // Update the previous entry
-	    console.log("Updating previous entry with package URL: " + packageURL);
+            console.log(
+              'Updating previous entry with package URL: ' + packageURL
+            );
             const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
             const userInfo: TokenInformation = await userData(
               authToken.split('bearer')[1].trim()
             );
-            console.log(existingPackage);
+            //console.log(existingPackage);
             const existingId = existingPackage._id;
             existingPackage = await packageSchema.findOneAndUpdate(
               {name},
@@ -236,17 +273,33 @@ export const createPackage = async (req: any, res: any) => {
               Content,
               `../packages/${existingId}:${packageJson.version}.zip`
             );
-            console.log(
-              '**************** CREATED A NEW PACKAGE ****************'
+            successHandler(
+              200,
+              {
+                metadata: {
+                  Name: packageJson.name,
+                  Version: packageJson.version,
+                  ID: existingPackage._id + ':' + packageJson.version,
+                },
+                data: {
+                  Content: Content,
+                  URL: result.URL,
+                  JSProgram: '',
+                },
+              },
+              req,
+              res
             );
-            successHandler(200, {}, req, res);
+            console.log(
+              '**************** CREATED A SPICY NEW PACKAGE ****************'
+            );
             return;
           }
         } else {
           // Create a new entry for the package
           const result: SCORE_OUT = await metricCalculatorProgram(packageURL);
           const userInfo: TokenInformation = await userData(
-              authToken.split('bearer')[1].trim()
+            authToken.split('bearer')[1].trim()
           );
 
           const packageId = await savePackageToDb(
@@ -260,8 +313,24 @@ export const createPackage = async (req: any, res: any) => {
             Content,
             `../packages/${packageId}:${packageJson.version}.zip`
           );
-	  console.log("Finished in the final else");
-          successHandler(200, {msg: 'Done'}, req, res);
+          successHandler(
+            200,
+            {
+              metadata: {
+                Name: packageJson.name,
+                Version: packageJson.version,
+                ID: packageId._id + ':' + packageJson.version,
+              },
+              data: {
+                Content: Content,
+                URL: result.URL,
+                JSProgram: '',
+              },
+            },
+            req,
+            res
+          );
+          console.log('Finished in the final else');
           return;
         }
       }
@@ -276,7 +345,7 @@ export const createPackage = async (req: any, res: any) => {
     errorHandler(400, 'Failed to ingest the package', req, res);
   } finally {
     // Empty everything that was created
-   	child_process.execSync(
+    child_process.execSync(
       `rm -rf ../controllers/API/packages/ && mkdir ../controllers/API/packages`
     );
     return;
