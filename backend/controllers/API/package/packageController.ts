@@ -336,13 +336,8 @@ export const createPackage = async (req: any, res: any) => {
       }
     }
   } catch (e: any) {
-    console.log(e);
-    log(
-      'Something went wrong when trying to create the package',
-      e,
-      parseInt(process.env.LOG_LEVEL!)
-    );
     errorHandler(400, 'Failed to ingest the package', req, res);
+    console.log(e);
   } finally {
     // Empty everything that was created
     child_process.execSync(
