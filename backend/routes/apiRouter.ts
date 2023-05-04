@@ -34,7 +34,7 @@ module.exports = function (express: any) {
   });
 
   router.post('/register', async (req: Request, res: Response, next: any) => {
-	  console.log("Request made to register");
+    console.log('Request made to register');
     await CreateUser(req, res);
   });
 
@@ -102,7 +102,6 @@ module.exports = function (express: any) {
       req.ip
     );
     await findByName(req, res);
-    console.log('Request completed');
   });
 
   router.get('/package/:id/rate', async (req: any, res: any) => {
@@ -116,18 +115,16 @@ module.exports = function (express: any) {
     //await retrieveScores(req, res);
     console.log('Request completed');
   });
-//ADDING CALLS FOR NOT-IMPLEMENTED FUNCTIONALITy
-  router.post('/packages', async(req: any, res: any) => {
-	  console.log("Receied request to list packages");
+  //ADDING CALLS FOR NOT-IMPLEMENTED FUNCTIONALITy
+  router.post('/packages', async (req: any, res: any) => {
+    console.log('Receied request to list packages');
   });
-  router.put('/package/:id', async(req: any, res: any)=> {
-	  console.log('Received request to put package by id (UPDATE)');
+  router.put('/package/:id', async (req: any, res: any) => {
+    console.log('Received request to put package by id (UPDATE)');
   });
-  router.post('/package/byRegEx', async(req: any, res: any)=> {
-	  console.log('Received request to search for package by regex');
+  router.post('/package/byRegEx', async (req: any, res: any) => {
+    console.log('Received request to search for package by regex');
   });
 
   return router;
 };
-
-

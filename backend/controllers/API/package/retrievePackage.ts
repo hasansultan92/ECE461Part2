@@ -1,4 +1,4 @@
-import {errorHandler} from '../../utils/responseHandler';
+import {errorHandler, successHandler} from '../../utils/responseHandler';
 import {isAuthValid} from '../authenticate/AuthenticateFunctions';
 const packageSchema = require('../../Database/package-model');
 
@@ -59,7 +59,7 @@ export const findById = async (req: any, res: any) => {
       return;
     } else {
       errorHandler(400, 'This package does not exist anymore', req, res);
-      console.log("***** REQUESTED PACKAGE DID NOT EXIST *****")
+      console.log('***** REQUESTED PACKAGE DID NOT EXIST *****');
       return;
     }
   } catch (e: any) {
@@ -74,4 +74,52 @@ export const findById = async (req: any, res: any) => {
   }
 };
 
-export const findByName = async (req: any, res: any) => {};
+export const findByName = async (req: any, res: any) => {
+  try {
+    let packageName: any = req.params.name;
+    if (!packageName) {
+      errorHandler(400, 'The package name was not valid', req, res);
+      console.log('****** BOGUS NAME GIVEN ******');
+      return;
+    }
+    const authToken: string = req.headers['x-authorization'];
+    if (!authToken) {
+      // Send out error about the token not existing
+      errorHandler(400, 'Authorization token was not found', req, res);
+      return;
+    }
+    const valid: boolean = isAuthValid(authToken.split('bearer')[1].trim());
+    if (!valid) {
+      errorHandler(400, 'Authorization token in valid', req, res);
+      return;
+    }
+    const packageFromDb = await packageSchema.findOne({name: packageName});
+    if (packageFromDb) {
+      successHandler(200, packageFromDb.history, req, res);
+      console.log('REQUEST WAS COMPLETED');
+      return;
+    } else {
+      errorHandler(
+        400,
+        'This package does not exist in our database',
+        req,
+        res
+      );
+      console.log(
+        `*********** THE REQUESTED PACKAGE ${packageName} DID NOT EXIST IN OUR DATABASE ***********`
+      );
+      console.log('REQUEST WAS COMPLETED');
+      return;
+    }
+  } catch (e: any) {
+    errorHandler(
+      400,
+      'Something went wrong when looking for package by name',
+      req,
+      res
+    );
+    console.log(e);
+    console.log('REQUEST WAS NOT COMPLETED');
+    return;
+  }
+};

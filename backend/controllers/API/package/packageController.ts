@@ -124,7 +124,8 @@ export const createPackage = async (req: any, res: any) => {
         );
 
         ///  WORK FROM HERE!
-        const packageJson = require('../controllers/API/package/package.json');
+        const packageJson = require('../controllers/API/packages/package.json');
+
         // perform the save here
         const userInfo: TokenInformation = await userData(
           authToken.split('bearer')[1].trim()
@@ -136,6 +137,14 @@ export const createPackage = async (req: any, res: any) => {
           result,
           userInfo
         );
+        const packageIdSave = packageId + ':' + packageJson.version;
+        // Zip up the cloned repo and move to another dir
+        child_process.execSync(`
+        zip -r ${packageIdSave}.zip ./backend/controllers/API/packages/${packageJson.name}`);
+        child_process.execSync(
+          `mv ./backend/controllers/API/packages/${packageIdSave}.zip ./backend/packages/`
+        );
+        // Send response back to client
         successHandler(
           200,
           {
