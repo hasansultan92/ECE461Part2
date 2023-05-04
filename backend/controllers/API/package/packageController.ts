@@ -169,8 +169,8 @@ export const createPackage = async (req: any, res: any) => {
         console.log('This package did not have a valid URL');
         return;
       } else if (result.Status == -1) {
-        errorHandler(400, 'This package does not meet our threshold', req, res);
-        console.log('This package does not meet our threshold');
+	      console.log("This package does not meet our threshold");
+        errorHandler(424, 'This package does not meet our threshold', req, res);
         return;
       }
       // Using the content field
@@ -224,24 +224,9 @@ export const createPackage = async (req: any, res: any) => {
           console.log(existingPackage.version, packageJson.version);
           if (existingPackage.version.indexOf(packageJson.version) != -1) {
             // This package already exists. Return as is
-            successHandler(
-              200,
-              {
-                metadata: {
-                  Name: packageJson.name,
-                  Version: packageJson.version,
-                  ID: existingPackage._id + ':' + packageJson.version,
-                },
-                data: {
-                  Content: Content,
-                  URL: existingPackage.repository[0],
-                  JSProgram: '',
-                },
-              },
-              req,
-              res
-            );
-            console.log('***** THE PACKAGE ALREADY EXISTED IN OUR DB *****');
+            console.log('This package already exists');
+            successHandler(409, {description:"Package exists already."}, req, res);
+           console.log('***** THE PACKAGE ALREADY EXISTED IN OUR DB *****');
             return;
           } else {
             // Update the previous entry
@@ -302,6 +287,7 @@ export const createPackage = async (req: any, res: any) => {
             console.log(
               '**************** CREATED A SPICY NEW PACKAGE ****************'
             );
+            successHandler(200, {metadata:{Name:`${existingPackage.name}`,Version:`${packageJson.version}`,ID:existingId},data:{Content:`${Content}`}}, req, res);
             return;
           }
         } else {
