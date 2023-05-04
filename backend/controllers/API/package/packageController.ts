@@ -130,14 +130,14 @@ export const createPackage = async (req: any, res: any) => {
        const userInfo: TokenInformation = await userData(
           authToken.split('bearer')[1].trim()
         );
-        savePackageToDb(
+        const packageID = await savePackageToDb(
           packageJson.name,
           packageJson.version,
           result.URL,
           result,
           userInfo
         );
-        successHandler(200, {}, req, res);
+        successHandler(200, {metadata:{Name:`${packageJson.name}`,Version:`${packageJson.version}`,ID:`${packageID}`}}, req, res);
         return;
       } else if (result.Status == -2) {
 	      console.log("This package did not have a valid URL");
@@ -145,7 +145,7 @@ export const createPackage = async (req: any, res: any) => {
         return;
       } else if (result.Status == -1) {
 	      console.log("This package does not meet our threshold");
-        errorHandler(400, 'This package does not meet our threshold', req, res);
+        errorHandler(424, 'This package does not meet our threshold', req, res);
         return;
       }
       // Using the content field
@@ -197,7 +197,7 @@ export const createPackage = async (req: any, res: any) => {
           if (existingPackage.version.indexOf(packageJson.version) != -1) {
             // This package already exists. Return as is
             console.log('This package already exists');
-            successHandler(200, {}, req, res);
+            successHandler(409, {description:"Package exists already."}, req, res);
             return;
           } else {
             // Update the previous entry
@@ -239,7 +239,7 @@ export const createPackage = async (req: any, res: any) => {
             console.log(
               '**************** CREATED A NEW PACKAGE ****************'
             );
-            successHandler(200, {}, req, res);
+            successHandler(200, {metadata:{Name:`${existingPackage.name}`,Version:`${packageJson.version}`,ID:existingId},data:{Content:`${Content}`}}, req, res);
             return;
           }
         } else {
@@ -261,7 +261,7 @@ export const createPackage = async (req: any, res: any) => {
             `../packages/${packageId}:${packageJson.version}.zip`
           );
 	  console.log("Finished in the final else");
-          successHandler(200, {msg: 'Done'}, req, res);
+          successHandler(200, {metadata:{Name:`${packageJson.name}`,Version:`${packageJson.version}`, ID:`${packageId}`},data:{Content:`${Content}`}}, req, res);
           return;
         }
       }
