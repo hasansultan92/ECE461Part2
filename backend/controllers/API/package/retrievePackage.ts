@@ -28,7 +28,7 @@ export const findById = async (req: any, res: any) => {
       errorHandler(400, 'Authorization token was not found', req, res);
       return;
     }
-    const valid: boolean = isAuthValid(authToken);
+    const valid: boolean = isAuthValid(authToken.split('bearer')[1].trim());
     if (!valid) {
       errorHandler(400, 'Authorization token in valid', req, res);
       return;
@@ -59,6 +59,7 @@ export const findById = async (req: any, res: any) => {
       return;
     } else {
       errorHandler(400, 'This package does not exist anymore', req, res);
+      console.log("***** REQUESTED PACKAGE DID NOT EXIST *****")
       return;
     }
   } catch (e: any) {
