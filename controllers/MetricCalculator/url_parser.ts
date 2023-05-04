@@ -140,7 +140,7 @@ export async function get_urls(urlInput: string): Promise<URL_PARSE[]> {
     }
     const final_data: URL_PARSE[] = [];
     final_data.push(url_parse);
-    console.log(final_data);
+    //console.log(final_data);
     return final_data;
   }
   else{

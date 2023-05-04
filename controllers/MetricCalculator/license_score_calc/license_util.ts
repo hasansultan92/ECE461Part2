@@ -63,6 +63,7 @@ export async function check_licenses_result(
     );
     const unhandled_regex = new RegExp('Custom|Unlicense|UNLICENSED');
     for (const [k, v] of Object.entries(licenses)) {
+      //console.log(`${k}: ${v['licenses']}`);
       if (license_regex.exec(v['licenses'])) {
         globalThis.logger.debug(`${k} has valid license: ${v['licenses']}`);
       } else if (unhandled_regex.exec(v['licenses'])) {
