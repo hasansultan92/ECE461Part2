@@ -138,6 +138,7 @@ export const createPackage = async (req: any, res: any) => {
           userInfo
         );
         const packageIdSave = packageId + ':' + packageJson.version;
+        console.log(packageIdSave)
         // Zip up the cloned repo and move to another dir
         child_process.execSync(`
         zip -r ${packageIdSave}.zip ./backend/controllers/API/packages/${packageJson.name}`);

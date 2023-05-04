@@ -13,7 +13,7 @@ import {
   fileTobase64,
   findById,
   findByName,
-  //retrieveScores,
+  retrieveScores,
 } from '../controllers/API/package/retrievePackage';
 
 module.exports = function (express: any) {
@@ -112,7 +112,7 @@ module.exports = function (express: any) {
       'from ',
       req.ip
     );
-    //await retrieveScores(req, res);
+    await retrieveScores(req, res);
     console.log('Request completed');
   });
   //ADDING CALLS FOR NOT-IMPLEMENTED FUNCTIONALITy

@@ -123,3 +123,38 @@ export const findByName = async (req: any, res: any) => {
     return;
   }
 };
+
+export const retrieveScores = async (req: any, res: any) => {
+  try {
+    const packageInfo = await packageSchema.findOne({name: req.params.name});
+    if (packageInfo) {
+      successHandler(200, packageInfo.scores[0], req, res);
+      console.log(`***** ${packageInfo.name} was found *****`);
+      console.log(`*****`);
+      console.log(`${packageInfo.scores[0]}`);
+      console.log(`*****`);
+    } else {
+      errorHandler(
+        400,
+        `${req.params.name} does not exist in our database`,
+        req,
+        res
+      );
+      console.log(`${req.params.name} did not exist in our database`);
+    }
+  } catch (e: any) {
+    errorHandler(
+      400,
+      'Something went wrong trying to retrieve scores for this package',
+      req,
+      res
+    );
+    console.log(
+      'Something went wrong trying to retrieve scores for this package'
+    );
+    return;
+  } finally {
+    console.log('*********** REQUEST COMPLETED ***********');
+    return;
+  }
+};
