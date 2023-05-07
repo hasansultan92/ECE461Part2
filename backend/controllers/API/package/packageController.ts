@@ -122,11 +122,17 @@ export const createPackage = async (req: any, res: any) => {
         await child_process.execSync(
           `cd /home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages && git clone ${result.URL}`
         );
+	let randStr = (Math.random() + 1).toString(36).substring(7);
 	await child_process.execSync('cd /home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages && cd * && mv  * ..');
-
+	await child_process.execSync(`mkdir /home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages/${randStr}`);
+	try{
+	await child_process.execSync(`cd /home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages && mv * ${randStr}`);
+	}
+	catch(e: any) {}
         ///  WORK FROM HERE!
-        const packageJson = require('/home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages/package.json');
-
+	var packageJson = null;
+        packageJson = await require(`/home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages/${randStr}/package.json`);
+	console.log("PackageJson.name: " + packageJson.name);
         // perform the save here
         const userInfo: TokenInformation = await userData(
           authToken.split('bearer')[1].trim()
