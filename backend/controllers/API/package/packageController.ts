@@ -120,31 +120,45 @@ export const createPackage = async (req: any, res: any) => {
         // Send the package to the database, perform a git clone
         if (process.env.PRODUCTION == '1') console.log('Cloning using the URL');
         await child_process.execSync(
-          `cd ../controllers/API/packages && git clone ${result.URL}`
+          `cd /home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages && git clone ${result.URL}`
         );
+	await child_process.execSync('cd /home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages && cd * && mv  * ..');
 
         ///  WORK FROM HERE!
-        const packageJson = require('../controllers/API/packages/package.json');
+        const packageJson = require('/home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages/package.json');
 
         // perform the save here
         const userInfo: TokenInformation = await userData(
           authToken.split('bearer')[1].trim()
         );
-        const packageId = savePackageToDb(
+        const packageId = await savePackageToDb(
           packageJson.name,
           packageJson.version,
           result.URL,
           result,
           userInfo
         );
+	//await child_process.execSync(`mkdir /home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages/${packageJson.name}`);
+	try{
+	await child_process.execSync(`mv /home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages/* /home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages/${packageJson.name}`);
+	}
+	catch(e: any)
+	{
+		console.log("expected error");
+	}
+	console.log(typeof(packageId));
+	console.log("Package ID:" + packageId);
+	console.log("packageJson.version: " + packageJson.version);
+	console.log("packageJson.versin type: " + typeof(packageJson.version));
         const packageIdSave = packageId + ':' + packageJson.version;
         console.log(packageIdSave)
         // Zip up the cloned repo and move to another dir
-        child_process.execSync(`
-        zip -r ${packageIdSave}.zip ./backend/controllers/API/packages/${packageJson.name}`);
-        child_process.execSync(
-          `mv ./backend/controllers/API/packages/${packageIdSave}.zip ./backend/packages/`
-        );
+	// THIS ISN'T DOING ANYTHING RIGHT NOW COMMENTING OUT AS IT WAS CAUSING PROBLEMS
+        //child_process.execSync(`
+        //zip -r ${packageIdSave}.zip /home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages/${packageJson.name}`);
+        //child_process.execSync(
+          //`mv /home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages/${packageIdSave}.zip /home/robinchild01/persistentServer2/ECE461Part2/backend/packages/`
+       // );
         // Send response back to client
         successHandler(
           200,
@@ -176,16 +190,16 @@ export const createPackage = async (req: any, res: any) => {
       }
       // Using the content field
     } else if (Content != '') {
-      base64_decode(Content, '../controllers/API/packages/new.zip');
+      base64_decode(Content, '/home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages/new.zip');
       // perform the unzip process
-      var randnum = Math.random();
-      console.log('Making archive with ID: ' + randnum);
-      base64_decode(
-        Content,
-        '../controllers/API/packageArchive/archive' + randnum + '.zip'
-      );
+      //var randnum = Math.random();
+      //console.log('Making archive with ID: ' + randnum);
+      //base64_decode(
+      //  Content,
+      //  '../controllers/API/packageArchive/archive' + randnum + '.zip'
+      //);
       child_process.execSync(
-        `cd ../controllers/API/packages/ && unzip new.zip && mv new.zip .. && cd * && mv * .. && cd .. && mv ../new.zip .`
+        `cd /home/robinchild01/persistentServer2/ECE461Part2/backend/controllers/API/packages/ && unzip new.zip && mv new.zip .. && cd * && mv * .. && cd .. && mv ../new.zip .`
       );
       console.log('Current Directory is: ' + process.cwd());
       /* try

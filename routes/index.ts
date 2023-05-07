@@ -34,6 +34,7 @@ export interface SCORE_OUT {
 
 function net_score_formula(subscores: SCORE_OUT): number {
   // prettier-ignore
+	
   const net_score: number =
   subscores.License * (
     (subscores.RampUp * 0.1) +
@@ -203,7 +204,7 @@ export async function metricCalculatorProgram(repo_url: string): Promise<SCORE_O
         
 
         score.NetScore = net_score_formula(score);
-        if(score.License && (score.RampUp > 0.2 && score.Correctness > 0.2 && score.BusFactor > 0.2 && score.ResponsiveMaintainer > 0.2 && score.License > 0.2 && score.VersionPinning > 0.2 && score.CodeReview > 0.2)){
+        if(score.License && (score.RampUp + 0.1 > 0.2 && score.Correctness + 0.1 > 0.2 && score.BusFactor + 0.1 > 0.2 && score.ResponsiveMaintainer + 0.1 > 0.2 && score.License > 0.2 && score.VersionPinning > 0.2 && score.CodeReview > 0.2)){
           score.Status = 1;
         }
         else{
